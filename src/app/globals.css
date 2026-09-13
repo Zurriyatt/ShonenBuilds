@@ -1,26 +1,238 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import 'tailwindcss';
+
+/* =========================================================
+   SHONENBUILDS THEME
+   Structure: shadcn semantic tokens + brand aliases
+   ========================================================= */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --- shadcn core (dark theme, applied directly to :root) --- */
+  --background: #09080F;              /* was: void */
+  --foreground: #EEEEF2;
+
+  --card: #0F0E1A;                    /* was: card-dark */
+  --card-foreground: #EEEEF2;
+
+  --popover: #0F0E1A;
+  --popover-foreground: #EEEEF2;
+
+  --primary: #8A5CF5;                 /* was: violet */
+  --primary-foreground: #FFFFFF;
+
+  --secondary: #1B1A26;               /* was: surface */
+  --secondary-foreground: #EEEEF2;
+
+  --muted: #1B1A26;                   /* muted background */
+  --muted-foreground: #6B6880;        /* was: muted (text) */
+
+  --accent: #03E4FF;                  /* was: cyan */
+  --accent-foreground: #09080F;
+
+  --destructive: #EF2E2E;
+  --destructive-foreground: #FFFFFF;
+
+  --border: #22203A;                  /* was: border-subtle */
+  --input: #22203A;
+  --ring: #8A5CF5;
+
+  /* --- brand extras (ShonenBuilds-specific) --- */
+  --gold: #F5A41E;
+  --violet-dim: rgba(138, 92, 245, 0.15);
+  --violet-glow: rgba(138, 92, 245, 0.35);
+
+  /* --- chart palette --- */
+  --chart-1: #8A5CF5;   /* violet  — primary metric */
+  --chart-2: #03E4FF;   /* cyan    — energy/xp */
+  --chart-3: #F5A41E;   /* gold    — top rank */
+  --chart-4: #10B981;   /* emerald — completed */
+  --chart-5: #EF2E2E;   /* crimson — failed/danger */
+
+  /* --- radius scale --- */
+  --radius: 0.75rem;
+
+  color-scheme: dark;
 }
+
+/* =========================================================
+   TAILWIND THEME MAPPING
+   Exposes :root tokens as utility-generating colors + fonts
+   ========================================================= */
 
 @theme inline {
+  /* shadcn semantic colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* brand extras */
+  --color-gold: var(--gold);
+  --color-violet-dim: var(--violet-dim);
+  --color-violet-glow: var(--violet-glow);
+
+  /* --- legacy aliases (keep existing component working) --- */
+  --color-void: var(--background);
+  --color-card-dark: var(--card);
+  --color-surface: var(--secondary);
+  --color-border-subtle: var(--border);
+  --color-violet: var(--primary);
+  --color-cyan: var(--accent);
+  --color-muted-legacy: var(--muted-foreground); /* see migration note */
+
+  /* fonts */
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+
+  /* radius scale */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* =========================================================
+   BASE LAYER
+   ========================================================= */
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html,
+  body {
+    height: 100%;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-body);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* =========================================================
+   SCROLLBAR (hidden)
+   ========================================================= */
+
+* {
+  scrollbar-width: none;
 }
+*::-webkit-scrollbar {
+  display: none;
+}
+/* =========================================================
+   SCROLLBAR — premium (neutral → primary on hover)
+   ========================================================= */
+
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* WebKit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  /* The 3px border + background-clip = "floating pill" look */
+  background: var(--muted-foreground);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--primary);
+  background-clip: padding-box;
+}
+
+/* Corner piece (where horizontal + vertical meet) */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+@keyframes orb-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%      { opacity: 0.9; transform: scale(1.08); }
+}
+
+@keyframes exp-fill {
+  0%   { width: 0%; }
+  100% { width: 72%; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-slide {
+  0%   { left: -60%; }
+  100% { left: 110%; }
+}
+
+.animate-orb {
+  animation: orb-pulse 6s ease-in-out infinite;
+}
+
+.animate-exp-fill {
+  animation: exp-fill 2.2s cubic-bezier(0.4, 0, 0.2, 1) 0.8s both;
+}
+
+.fade-up-1 { animation: fade-up 0.7s ease both 0.1s; }
+.fade-up-2 { animation: fade-up 0.7s ease both 0.25s; }
+.fade-up-3 { animation: fade-up 0.7s ease both 0.4s; }
+.fade-up-4 { animation: fade-up 0.7s ease both 0.55s; }
+.fade-up-5 { animation: fade-up 0.7s ease both 1.4s; }
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
