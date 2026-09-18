@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Syne, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { VisibleLayout } from "./visibleLayout";
+
 const syne = Syne({
   variable: "--font-display",
   subsets: ["latin"],
@@ -22,68 +23,58 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://shonenbuilds.online"),
 
   title: {
-    default: "ShonenBuilds — Level Up Your Calisthenics. Every Day.",
+    default: "ShonenBuilds — Gamified Calisthenics Skill Tree",
     template: "%s | ShonenBuilds",
   },
 
   description:
-    "Gamified calisthenics training. Unlock skill nodes, earn XP, and climb 10 tiers of anime-inspired ranks from E-Rank to Apex. Choose your discipline: Shinobi, Awakened Hunter, High Seas, or Spirit Warrior.",
+    "Level up your bodyweight fitness. Train Planche, Front Lever, and Muscle-Ups with gamified skill trees, XP progression, and anime-inspired ranks.",
 
   keywords: [
-    "calisthenics",
-    "bodyweight training",
-    "gamified fitness",
-    "anime fitness app",
-    "skill tree",
-    "calisthenics progression",
-    "street workout",
-    "fitness RPG",
-    "power level",
-    "shonen",
-    "pull-up training",
+    "gamified calisthenics app",
+    "calisthenics skill tree",
     "planche progression",
-    "muscle-up",
+    "front lever training",
+    "bodyweight training app",
+    "anime fitness app",
+    "ShonenBuilds",
   ],
 
   authors: [{ name: "ShonenBuilds" }],
   creator: "ShonenBuilds",
   publisher: "ShonenBuilds",
 
-  // Canonical — tells Google this is the official URL
-  alternates: {
-    canonical: "/",
-  },
+  // ❌ NO canonical here.
+  // Inherited by every child page → de-indexes them.
+  // Set canonical per-page in each page.tsx instead.
 
-  // Open Graph — controls how the link looks on Discord, LinkedIn, WhatsApp, iMessage
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "https://shonenbuilds.online",
     siteName: "ShonenBuilds",
-    title: "ShonenBuilds — Level Up Your Calisthenics. Every Day.",
+    title: "ShonenBuilds — Gamified Calisthenics App",
     description:
-      "Master calisthenics through gamified progression. Unlock skill nodes, earn XP, rise through anime-inspired ranks.",
+      "Unlock elite bodyweight skills like Planche & Front Lever. Earn XP, climb anime ranks, and compete on global leaderboards.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "ShonenBuilds — Level Up. Every Day.",
+        alt: "ShonenBuilds Gamified Calisthenics Platform",
       },
     ],
   },
 
-  // Twitter/X card
   twitter: {
     card: "summary_large_image",
-    title: "ShonenBuilds — Level Up Your Calisthenics. Every Day.",
+    title: "ShonenBuilds — Gamified Calisthenics App",
     description:
-      "Gamified calisthenics. Skill trees. Anime ranks. Every rep earns XP.",
+      "Master Planche, Front Lever, and Human Flag with gamified skill trees and XP ranks.",
     images: ["/og-image.png"],
     creator: "@shonenbuilds",
   },
 
-  // Favicon + touch icons (place these in /public)
   icons: {
     icon: [
       { url: "/favicon.ico" },
@@ -93,7 +84,6 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
   },
 
-  // Tell Google how to crawl
   robots: {
     index: true,
     follow: true,
@@ -106,12 +96,11 @@ export const metadata: Metadata = {
     },
   },
 
-  // For sharing to phone/browser UI
   applicationName: "ShonenBuilds",
-  category: "Fitness",
+  category: "Health & Fitness",
 };
 
-/* ============ VIEWPORT (separate export in Next 15) ============ */
+/* ============ VIEWPORT ============ */
 export const viewport: Viewport = {
   themeColor: "#09080F",
   width: "device-width",
@@ -119,16 +108,74 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-/* ============ ROOT LAYOUT ============ */
-export default async function RootLayout({ children }: LayoutProps<"/">) {
+/* ============ STRUCTURED DATA — @graph ============ */
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://shonenbuilds.online/#organization",
+      name: "ShonenBuilds",
+      url: "https://shonenbuilds.online",
+      logo: "https://shonenbuilds.online/icon-512.png",
+      sameAs: [
+        "https://x.com/shonenbuilds",
+        "https://github.com/Zurriyatt/ShonenBuilds",
+        "https://linkedin.com/company/shonenbuilds",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://shonenbuilds.online/#website",
+      url: "https://shonenbuilds.online",
+      name: "ShonenBuilds",
+      publisher: { "@id": "https://shonenbuilds.online/#organization" },
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://shonenbuilds.online/#software",
+      name: "ShonenBuilds",
+      applicationCategory: "HealthApplication",
+      applicationSubCategory: "Fitness",
+      operatingSystem: "Web",
+      url: "https://shonenbuilds.online",
+      description:
+        "Gamified calisthenics skill tree for mastering Planche, Front Lever, Handstand Push-Ups, Muscle-Up, and Human Flag.",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      featureList: [
+        "Gamified calisthenics skill tree",
+        "XP and progression tracking",
+        "10 anime-inspired rank tiers (E-Rank to Apex)",
+        "Global leaderboard",
+        "Squad challenges",
+        "Real-time workout chat",
+      ],
+      audience: {
+        "@type": "Audience",
+        audienceType:
+          "Calisthenics athletes, bodyweight fitness enthusiasts, anime fans",
+      },
+      publisher: { "@id": "https://shonenbuilds.online/#organization" },
+    },
+  ],
+};
 
+/* ============ ROOT LAYOUT ============ */
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${dmSans.variable} h-full antialiased `}
+      className={`${syne.variable} ${dmSans.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col max-w-screen overflow-x-hidden bg-background text-foreground ">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
+
+      <body className="min-h-full flex flex-col max-w-screen overflow-x-hidden bg-background text-foreground">
         <VisibleLayout>{children}</VisibleLayout>
       </body>
     </html>

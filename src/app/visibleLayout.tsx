@@ -6,7 +6,6 @@
     import { useState, useEffect } from "react";
     export function VisibleLayout({ children }: { children: React.ReactNode }) {
         const [sidebarVisible, setSidebarVisible] = useState(false);
-        const { user } = useUser();
         return (
             <>
                 <UserProvider>
