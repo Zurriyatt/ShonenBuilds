@@ -3,7 +3,6 @@ import type { Metadata, Viewport } from "next";
 import { Syne, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { VisibleLayout } from "./visibleLayout";
-
 const syne = Syne({
   variable: "--font-display",
   subsets: ["latin"],
@@ -121,14 +120,15 @@ export const viewport: Viewport = {
 };
 
 /* ============ ROOT LAYOUT ============ */
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${dmSans.variable} h-full antialiased`}
+      className={`${syne.variable} ${dmSans.variable} h-full antialiased `}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col max-w-screen overflow-x-hidden bg-background text-foreground">
+      <body className="min-h-full flex flex-col max-w-screen overflow-x-hidden bg-background text-foreground ">
         <VisibleLayout>{children}</VisibleLayout>
       </body>
     </html>

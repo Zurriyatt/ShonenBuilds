@@ -1,0 +1,41 @@
+// use prisma-8
+
+model User {
+  id          String   @id // Handle ID generation in app code, or use a Postgres native UUID strategy
+  username String
+  email    String @unique
+  name     String
+  password String
+  world    String
+  goal     String
+  why      String
+  rank     Rank?
+  sessions Session[]
+
+  createdAt DateTime @default(now())
+  // Change this line:
+  updatedAt DateTime @default(dbgenerated("CURRENT_TIMESTAMP"))
+}
+
+model Rank {
+  id     Int  @id @default(autoincrement())
+  userId String  @unique
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rank   String
+}
+
+model Session {
+  id          String   @id // Handle ID generation in app code, or use a Postgres native UUID strategy
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fingerprint String?
+  deviceName  String?
+  browser     String?
+  os          String?
+  city        String?
+  country     String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  @@map("sessions")
+}
