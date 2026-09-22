@@ -1,23 +1,24 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Thumbmark } from "@thumbmarkjs/thumbmarkjs";
+import { getAllWorlds, getRankName, getWorld, getWorldPaths } from "@/lib/world/MPS";
+
 import Link from "next/link";
 /* =========================================================
    TYPES
    ========================================================= */
 type Screen = "onboarding" | "login";
-type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-
+type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 interface FormData {
     goal: string;
     why: string;
     world: string;
+    path: string; // ← ADD
     fullName: string;
     username: string;
     email: string;
     password: string;
 }
-
 /* =========================================================
    STATIC DATA
    ========================================================= */
@@ -35,81 +36,12 @@ const WHYS = [
     { id: "discipline", icon: "⚔️", title: "Discipline", sub: "Forge unbreakable daily habits" },
 ];
 
-const WORLDS = [
-    {
-        id: "shinobi",
-        title: "Shinobi World",
-        icon: "🥷",
-        sub: "Master chakra, stealth & ninjutsu",
-        color: "#03E4FF",
-        glow: "rgba(3,228,255,0.22)",
-        border: "rgba(3,228,255,0.35)",
-        tier: "Genin → Kage",
-    },
-    {
-        id: "hunter",
-        title: "Hunter World",
-        icon: "⚡",
-        sub: "Awaken your Nen. Rise to True Monarch",
-        color: "#8A5CF5",
-        glow: "rgba(138,92,245,0.25)",
-        border: "rgba(138,92,245,0.42)",
-        tier: "E-Rank → SSS-Rank",
-    },
-    {
-        id: "pirate",
-        title: "Pirate World",
-        icon: "⚓",
-        sub: "Sail the Grand Sea. Forge a legendary crew",
-        color: "#38BDF8",
-        glow: "rgba(56,189,248,0.2)",
-        border: "rgba(56,189,248,0.32)",
-        tier: "Rookie → Yonko",
-    },
-    {
-        id: "soul",
-        title: "Soul World",
-        icon: "🌀",
-        sub: "Wield spiritual pressure. Command the unseen",
-        color: "#F5A41E",
-        glow: "rgba(245,164,30,0.2)",
-        border: "rgba(245,164,30,0.35)",
-        tier: "Academy → Soul Sovereign",
-    },
-    {
-        id: "demon",
-        title: "Demon World",
-        icon: "🔥",
-        sub: "Consume demons. Ascend through breathing arts",
-        color: "#F87171",
-        glow: "rgba(248,113,113,0.2)",
-        border: "rgba(248,113,113,0.35)",
-        tier: "Combatant → Arch-Demon",
-    },
-    {
-        id: "game",
-        title: "Game World",
-        icon: "🎮",
-        sub: "Compete. Dominate. Claim sovereign rank",
-        color: "#10B981",
-        glow: "rgba(16,185,129,0.2)",
-        border: "rgba(16,185,129,0.32)",
-        tier: "Silver → Sovereign / Mythic",
-    },
-    {
-        id: "multiverse",
-        title: "Multiverse",
-        icon: "✦",
-        sub: "Pure human ranking · Novice → Apex Sovereign Prime",
-        color: "#C084FC",
-        glow: "rgba(192,132,252,0.2)",
-        border: "rgba(192,132,252,0.35)",
-        tier: "E-Rank (Novice) → Apex",
-        isSpecial: true,
-    },
-];
-
-const WORLD_PREVIEWS = WORLDS.map((w) => ({ icon: w.icon, label: w.title.replace(" World", ""), color: w.color }));
+const WORLDS = getAllWorlds();
+const WORLD_PREVIEWS = WORLDS.map((w) => ({
+    icon: w.icon,
+    label: w.display.replace(" World", "").replace("Human Verse", "Human"),
+    color: w.color,
+}));
 
 /* =========================================================
    FINGERPRINT HELPER
@@ -424,8 +356,8 @@ function StepTeaser({ onBegin }: { onBegin: () => void }) {
                 </h2>
                 <p className="text-[14px] text-muted-foreground font-body leading-relaxed max-w-[320px] mx-auto">
                     Create your character to unlock your starter world — then climb from{" "}
-                    <span className="text-foreground font-medium">E-Rank Novice</span> to{" "}
-                    <span className="text-gold font-medium">Apex Sovereign Prime</span>. Every rep earns XP.
+                    <span className="text-foreground font-medium">Beginner </span> to{" "}
+                    <span className="text-gold font-medium">Master</span>. Every rep earns XP.
                 </p>
             </div>
 
@@ -558,7 +490,7 @@ function StepWhy({
 /* =========================================================
    STEP 3 — WORLD SELECTION
    ========================================================= */
-function StepWorldSelection({
+function StepWorldAndPath({
     data,
     setData,
     onNext,
@@ -567,49 +499,80 @@ function StepWorldSelection({
     setData: (d: Partial<FormData>) => void;
     onNext: () => void;
 }) {
-    const [hovered, setHovered] = useState<string | null>(null);
-    const selected = data.world;
+    const [hoveredWorld, setHoveredWorld] = useState<string | null>(null);
+    const [hoveredPath, setHoveredPath] = useState<string | null>(null);
+
+    const selectedWorld = data.world ? getWorld(data.world) : null;
+    const availablePaths = data.world ? getWorldPaths(data.world) : [];
+
+    const handleWorldPick = (worldId: string) => {
+        const paths = getWorldPaths(worldId);
+        // Auto-pick if only one path
+        if (paths.length === 1) {
+            setData({ world: worldId, path: paths[0].id });
+        } else {
+            setData({ world: worldId, path: "" }); // clear path if world changed
+        }
+    };
+
+    const canContinue = data.world && data.path;
 
     return (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-6">
+            {/* ── Header ── */}
             <div className="flex flex-col gap-1.5 animate-fade-up-1">
                 <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/25 rounded-full px-3 py-1 w-fit">
                     <span className="text-gold text-[10px]">✦</span>
                     <span className="text-[11px] text-gold font-semibold tracking-[0.08em] uppercase font-body">
-                        Realm Binding
+                        {selectedWorld && availablePaths.length > 1 ? "Choose Your Path" : "Realm Binding"}
                     </span>
                 </div>
                 <h2 className="font-display font-bold text-[clamp(22px,4vw,30px)] leading-tight tracking-[-0.03em] text-foreground">
-                    Choose Your{" "}
-                    <span className="bg-gradient-to-r from-gold to-primary bg-clip-text text-transparent">Realm.</span>
+                    {selectedWorld && availablePaths.length > 1 ? (
+                        <>
+                            Choose Your{" "}
+                            <span className="bg-gradient-to-r from-gold to-primary bg-clip-text text-transparent">
+                                Path.
+                            </span>
+                        </>
+                    ) : (
+                        <>
+                            Choose Your{" "}
+                            <span className="bg-gradient-to-r from-gold to-primary bg-clip-text text-transparent">
+                                Realm.
+                            </span>
+                        </>
+                    )}
                 </h2>
                 <p className="text-[13px] text-muted-foreground font-body leading-relaxed">
-                    Your realm determines your rank path, skill tree & rival pool.
+                    {selectedWorld && availablePaths.length > 1
+                        ? "Your path shapes your rank progression and rival pool."
+                        : "Your realm determines your rank path, skill tree & rival pool."}
                 </p>
             </div>
 
+            {/* ── World Grid (top) ── */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 animate-fade-up-2">
-                {WORLDS.map((w) => {
-                    const isSel = selected === w.id;
-                    const isHov = hovered === w.id;
+                {getAllWorlds().map((w) => {
+                    const isSel = data.world === w.id;
+                    const isHov = hoveredWorld === w.id;
                     return (
                         <button
                             key={w.id}
-                            onClick={() => setData({ world: w.id })}
-                            onMouseEnter={() => setHovered(w.id)}
-                            onMouseLeave={() => setHovered(null)}
-                            className={`relative flex flex-col items-start gap-2 rounded-2xl p-3.5 text-left transition-all duration-200 overflow-hidden ${w.isSpecial ? "col-span-2 sm:col-span-1" : ""}`}
+                            onClick={() => handleWorldPick(w.id)}
+                            onMouseEnter={() => setHoveredWorld(w.id)}
+                            onMouseLeave={() => setHoveredWorld(null)}
+                            className="relative flex flex-col items-start gap-2 rounded-2xl p-3.5 text-left transition-all duration-200 overflow-hidden"
                             style={{
                                 background: isSel
                                     ? `linear-gradient(135deg, ${w.glow} 0%, color-mix(in srgb, var(--card) 96%, transparent) 100%)`
                                     : isHov
                                       ? "color-mix(in srgb, var(--card) 90%, transparent)"
                                       : "color-mix(in srgb, var(--card) 60%, transparent)",
-                                border: isSel
-                                    ? `1.5px solid ${w.border}`
-                                    : isHov
-                                      ? `1.5px solid ${w.border}`
-                                      : "1.5px solid color-mix(in srgb, var(--border) 75%, transparent)",
+                                border:
+                                    isSel || isHov
+                                        ? `1.5px solid ${w.border}`
+                                        : "1.5px solid color-mix(in srgb, var(--border) 75%, transparent)",
                                 boxShadow: isSel
                                     ? `0 0 22px ${w.glow}, inset 0 0 36px ${w.glow}`
                                     : isHov
@@ -617,74 +580,116 @@ function StepWorldSelection({
                                       : "none",
                             }}
                         >
-                            {(isSel || isHov) && (
-                                <div
-                                    className="absolute top-0 -left-full w-1/2 h-full opacity-20 pointer-events-none"
-                                    style={{
-                                        background: `linear-gradient(90deg,transparent,${w.color},transparent)`,
-                                        animation: "card-shimmer 1.1s ease both",
-                                    }}
-                                />
-                            )}
-                            {isSel && (
-                                <div
-                                    className="absolute top-2 right-2 w-[18px] h-[18px] rounded-full flex items-center justify-center"
-                                    style={{ background: w.color, boxShadow: `0 0 8px ${w.glow}` }}
-                                >
-                                    <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
-                                        <path
-                                            d="M1.5 4.5l2 2 4-4"
-                                            stroke="var(--primary-foreground)"
-                                            strokeWidth="1.5"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                    </svg>
-                                </div>
-                            )}
                             <div
-                                className="w-9 h-9 rounded-xl flex items-center justify-center text-lg transition-all duration-200"
+                                className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
                                 style={{
                                     background:
                                         isSel || isHov
                                             ? w.glow
                                             : "color-mix(in srgb, var(--secondary) 80%, transparent)",
-                                    border: `1px solid ${isSel || isHov ? w.border : "color-mix(in srgb, var(--border) 60%, transparent)"}`,
-                                    boxShadow: isSel ? `0 0 10px ${w.glow}` : "none",
+                                    border: `1px solid ${isSel || isHov ? w.border : "var(--border)"}`,
                                 }}
                             >
                                 {w.icon}
                             </div>
                             <div className="flex flex-col gap-0.5">
                                 <span
-                                    className="font-display font-bold text-[12px] leading-tight transition-colors duration-200"
+                                    className="font-display font-bold text-[12px] leading-tight"
                                     style={{ color: isSel || isHov ? w.color : "var(--foreground)" }}
                                 >
-                                    {w.title}
+                                    {w.display}
                                 </span>
                                 <span className="text-[9px] text-muted-foreground font-body leading-snug line-clamp-2">
-                                    {w.sub}
+                                    {w.tagline}
                                 </span>
-                            </div>
-                            <div
-                                className="mt-auto text-[8px] font-body font-semibold tracking-wider px-1.5 py-0.5 rounded-full"
-                                style={{
-                                    color: w.color,
-                                    background: w.glow,
-                                    border: `1px solid ${w.border}`,
-                                    opacity: isSel || isHov ? 1 : 0.5,
-                                }}
-                            >
-                                {w.tier}
                             </div>
                         </button>
                     );
                 })}
             </div>
 
-            <div className="animate-fade-up-3">
-                <PrimaryButton onClick={onNext} disabled={!selected} gradient="gold">
-                    {selected ? `Enter ${WORLDS.find((w) => w.id === selected)?.title} ✦` : "Select Your Realm"}
+            {/* ── Path Grid (appears only when 2+ paths) ── */}
+            {selectedWorld && availablePaths.length > 1 && (
+                <div className="flex flex-col gap-3 animate-fade-up-3">
+                    <div className="flex items-center gap-2">
+                        <div className="h-px flex-1 bg-border" />
+                        <span className="text-[10px] text-muted-foreground font-body tracking-[0.1em] uppercase">
+                            Choose a Path in {selectedWorld.display}
+                        </span>
+                        <div className="h-px flex-1 bg-border" />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        {availablePaths.map((path) => {
+                            const isSel = data.path === path.id;
+                            const isHov = hoveredPath === path.id;
+                            return (
+                                <button
+                                    key={path.id}
+                                    onClick={() => setData({ path: path.id })}
+                                    onMouseEnter={() => setHoveredPath(path.id)}
+                                    onMouseLeave={() => setHoveredPath(null)}
+                                    className="relative flex flex-col items-start gap-2.5 rounded-2xl p-4 text-left transition-all duration-200 overflow-hidden"
+                                    style={{
+                                        background: isSel
+                                            ? `linear-gradient(135deg, ${selectedWorld.glow} 0%, color-mix(in srgb, var(--card) 95%, transparent) 100%)`
+                                            : isHov
+                                              ? "color-mix(in srgb, var(--secondary) 90%, transparent)"
+                                              : "color-mix(in srgb, var(--card) 70%, transparent)",
+                                        border: isSel
+                                            ? `1.5px solid ${selectedWorld.border}`
+                                            : isHov
+                                              ? `1.5px solid ${selectedWorld.border}`
+                                              : "1.5px solid var(--border)",
+                                        boxShadow: isSel
+                                            ? `0 0 20px ${selectedWorld.glow}, inset 0 0 30px ${selectedWorld.glow}`
+                                            : "none",
+                                    }}
+                                >
+                                    {isSel && (
+                                        <div
+                                            className="absolute top-2.5 right-2.5 rounded-full flex items-center justify-center w-[18px] h-[18px]"
+                                            style={{ background: selectedWorld.color }}
+                                        >
+                                            <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                                                <path
+                                                    d="M1.5 4.5l2 2 4-4"
+                                                    stroke="#fff"
+                                                    strokeWidth="1.5"
+                                                    strokeLinecap="round"
+                                                />
+                                            </svg>
+                                        </div>
+                                    )}
+                                    <div className="text-2xl">{path.icon}</div>
+                                    <div className="flex flex-col gap-0.5">
+                                        <span
+                                            className="font-display font-bold text-[14px]"
+                                            style={{
+                                                color: isSel || isHov ? selectedWorld.color : "var(--foreground)",
+                                            }}
+                                        >
+                                            {path.name}
+                                        </span>
+                                        <span className="text-[11px] text-muted-foreground font-body leading-snug">
+                                            {path.tagline}
+                                        </span>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {/* ── Continue ── */}
+            <div className="animate-fade-up-4">
+                <PrimaryButton onClick={onNext} disabled={!canContinue} gradient="gold">
+                    {canContinue
+                        ? `Enter ${selectedWorld?.display} ✦`
+                        : selectedWorld && availablePaths.length > 1
+                          ? "Choose Your Path"
+                          : "Select Your Realm"}
                 </PrimaryButton>
             </div>
         </div>
@@ -754,11 +759,11 @@ function StepRankReveal({ data, onNext }: { data: FormData; onNext: () => void }
                 <h2 className="font-display font-bold text-[clamp(26px,6vw,40px)] leading-tight tracking-[-0.03em] text-foreground">
                     You are{" "}
                     <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                        E-Rank
+                        {getRankName(data.world, data.path, 0)}
                     </span>
                 </h2>
                 <p className="font-display font-semibold text-[18px]" style={{ color: world.color }}>
-                    {world.title}
+                    {world.display}
                 </p>
             </div>
 
@@ -767,9 +772,9 @@ function StepRankReveal({ data, onNext }: { data: FormData; onNext: () => void }
                 style={{ borderColor: world.border, opacity: phase >= 2 ? 1 : 0, transition: "opacity 0.5s ease" }}
             >
                 {[
-                    { label: "Tier", value: "1 / 10" },
-                    { label: "Universal", value: "E-Rank (Novice)" },
-                    { label: world.title.replace(" World", "") + " Path", value: world.tier.split("→")[0].trim() },
+                    { label: "Tier", value: "0 / 10" },
+                    { label: "Path", value: data.path.charAt(0).toUpperCase() + data.path.slice(1) },
+                    { label: "Realm", value: world.display },
                 ].map((cell, i) => (
                     <div
                         key={i}
@@ -894,7 +899,7 @@ function StepIdentityCredentials({
                         <div className="flex flex-col gap-0">
                             <span className="text-[10px] text-muted-foreground font-body">Binding to</span>
                             <span className="font-display font-bold text-[12px]" style={{ color: world.color }}>
-                                {world.title} · E-Rank Novice
+                                {world.display} · {getRankName(data.world, data.path, 0)}
                             </span>
                         </div>
                         <div
@@ -1054,7 +1059,7 @@ function StepComplete({ data }: { data: FormData }) {
                 <p className="text-[13px] text-muted-foreground font-body max-w-[300px] mx-auto leading-relaxed">
                     Bound to the{" "}
                     <span className="font-semibold" style={{ color: world.color }}>
-                        {world.title}
+                        {world.display}
                     </span>
                     . Training for <span className="text-foreground font-medium">{goal?.title}</span>. Driven by{" "}
                     <span className="text-foreground font-medium">{why?.title}</span>.
@@ -1063,8 +1068,8 @@ function StepComplete({ data }: { data: FormData }) {
 
             <div className="w-full grid grid-cols-3 gap-0 rounded-xl overflow-hidden border border-border animate-fade-up-2">
                 {[
-                    { label: "Starting Rank", value: "E-Rank", color: world.color },
-                    { label: "Realm", value: world.title, color: world.color },
+                    { label: "Starting Rank", value: getRankName(data.world, data.path, 0), color: world.color },
+                    { label: "Realm", value: world.display, color: world.color },
                     { label: "Goal", value: goal?.title ?? "—", color: "var(--primary)" },
                 ].map((c, i) => (
                     <div
@@ -1511,12 +1516,12 @@ export default function App() {
         goal: "",
         why: "",
         world: "",
+        path: "", // ← ADDed
         fullName: "",
         username: "",
         email: "",
         password: "",
     });
-
     const update = (partial: Partial<FormData>) => setFormData((p) => ({ ...p, ...partial }));
     const next = () => setStep((s) => (s + 1) as Step);
 
@@ -1564,7 +1569,7 @@ export default function App() {
                 ) : step === 2 ? (
                     <StepWhy key="s2" data={formData} setData={update} onNext={next} />
                 ) : step === 3 ? (
-                    <StepWorldSelection key="s3" data={formData} setData={update} onNext={next} />
+                    <StepWorldAndPath key="s3" data={formData} setData={update} onNext={next} />
                 ) : step === 4 ? (
                     <StepRankReveal key="s4" data={formData} onNext={next} />
                 ) : step === 5 ? (

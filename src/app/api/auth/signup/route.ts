@@ -12,13 +12,13 @@
     export async function POST(request: NextRequest) {
         try {
             const body = await request.json();
-            const { fullName, username, email, password, goal, why, world, fingerprint } = body;
+            const { path, fullName, username, email, password, goal, why, world, fingerprint } = body;
             // 1. Validate
             let auth = await authVerify({ req: request });
             if(auth.data) {
                 return NextResponse.json({ success: false, error: "You are already loggedin!" });
             }
-            if (!fullName || !username || !email || !password || !goal || !why || !world) {
+            if (!fullName || !username || !email || !password || !goal || !why || !world || !path) {
                 return NextResponse.json({ success: false, error: "All fields are required" }, { status: 400 });
             }
             if (!email.includes("@") || !email.includes(".")) {
@@ -53,23 +53,22 @@
             const hashedPassword = await bcrypt.hash(password, 10);
 
             // Generate application-level UUID for the user string ID
-            const userId = crypto.randomUUID();
+            // const userId = crypto.randomUUID(); backup if needed after runtime crash
 
             // 5. Create user + rank
             const user = await db.orm.public.User.create({
-                id: userId,
                 name: fullName,
                 username: normalizedUsername,
                 email: normalizedEmail,
                 password: hashedPassword,
                 goal,
+                path,
                 why,
                 world,
             });
 
-            await db.orm.public.Rank.create({
+            await db.orm.public.UserStats.create({
                 userId: user.id,
-                rank: "E",
             });
             // 6. Parse device info
             const ua = request.headers.get("user-agent") || "";
@@ -86,9 +85,8 @@
             // 7. Create session
             const expiresAt = Temporal.Now.instant().add({ hours: SESSION_DAYS*24 });
 
-            const sessionId = crypto.randomUUID();
+            // const sessionId = crypto.randomUUID(); left for runtime behavior we will adapt according to it
             const session = await db.orm.public.Session.create({
-                id: sessionId,
                 userId: user.id, // Successfully matches your active String relation
                 expiresAt,
                 fingerprint: fingerprint ?? null,
@@ -107,7 +105,7 @@
             // 9. Response + cookie
             const response = NextResponse.json(
                 {
-                    scuess: true,
+                    success: true,
                     message: "Account created",
                     user: { id: user.id, username: user.username, email: user.email, world: user.world },
                 },
