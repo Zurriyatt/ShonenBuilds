@@ -1,31 +1,47 @@
 // use prisma-8
 
 model User {
-  id          String   @id // Handle ID generation in app code, or use a Postgres native UUID strategy
-  username String
-  email    String @unique
-  name     String
-  password String
-  world    String
-  goal     String
-  why      String
-  rank     Rank?
-  sessions Session[]
+  // FIX: Explicitly use cuid(2) in Prisma 8
+  id        String   @id @default(cuid(2)) 
+  username  String   @unique
+  email     String   @unique
+  name      String
+  password  String
+  world     String
+  path      String
+  goal      String
+  why       String
+  stats     UserStats?
+  sessions  Session[]
 
   createdAt DateTime @default(now())
-  // Change this line:
-  updatedAt DateTime @default(dbgenerated("CURRENT_TIMESTAMP"))
+  updatedAt temporal.updatedAt()
+
+  @@map("users")
 }
 
-model Rank {
-  id     Int  @id @default(autoincrement())
-  userId String  @unique
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rank   String
+model UserStats {
+  // FIX: Explicitly use cuid(2) in Prisma 8
+  id            String   @id @default(cuid(2)) 
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  xp            Int      @default(0)
+  level         Int      @default(1) 
+  tier          Int      @default(0) 
+  powerLevel    Int      @default(10)
+  currentStreak Int      @default(0)
+  longestStreak Int      @default(0)
+  totalWorkouts Int      @default(0)
+
+  createdAt     DateTime @default(now())
+  updatedAt     temporal.updatedAt()
+
+  @@map("user_stats")
 }
 
 model Session {
-  id          String   @id // Handle ID generation in app code, or use a Postgres native UUID strategy
+  // FIX: Explicitly use cuid(2) in Prisma 8
+  id          String   @id @default(cuid(2)) 
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   fingerprint String?
@@ -36,6 +52,7 @@ model Session {
   country     String?
   expiresAt   DateTime
   createdAt   DateTime @default(now())
-
+  updatedAt   temporal.updatedAt()
+  
   @@map("sessions")
 }
