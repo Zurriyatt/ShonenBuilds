@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { User } from "@/lib/auth/verify";
+import { getRankName } from "@/lib/world/MPS";
 import { useUser } from "@/lib/auth/UserProvider";
 /* =========================================================
    NAV ITEMS
@@ -29,6 +29,7 @@ const WORLDS = [
    LOGO MARK (shared visual)
    ========================================================= */
 function LogoMark({ size = 28 }: { size?: number }) {
+
     return (
         <div className="relative shrink-0" style={{ width: size, height: size }}>
             <div
@@ -170,9 +171,9 @@ export function SideBar({
     const world = USER_DATA
         ? WORLDS.find((w) => w.id === USER_DATA.world) ?? WORLDS[1]
         : WORLDS[1];
-
+    
     const loggedIn = USER_DATA?true:false;
-
+    const rank = getRankName(USER_DATA?.world as string,USER_DATA?.path as string,USER_DATA?.tier as number)
     return (
         <>
             {/* ── BACKDROP ── */}
@@ -287,8 +288,8 @@ export function SideBar({
                                                 border: "1px solid color-mix(in srgb, var(--primary) 28%, transparent)",
                                             }}
                                         >
-                                            <span className="text-[10px] font-body font-bold tracking-[0.08em] uppercase text-primary">
-                                                E-RANK · LV 7
+                                            <span className="text-[10px] font-body font-bold tracking-[0.08em] uppercase text-primary  flex pl-1">
+                                                {rank} ● Level {USER_DATA?.level}
                                             </span>
                                         </div>
                                     </div>
