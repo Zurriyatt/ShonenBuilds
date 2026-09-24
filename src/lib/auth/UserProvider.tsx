@@ -3,18 +3,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-
-export interface User {
-    userId: string;
-    email: string;
-    name: string;
-    username: string;
-    rank: any;
-    why: string;
-    goal: string;
-    world: string;
-    sessionId: string;
-}
+import { User } from "./verify";
 
 interface UserContextValue {
     user: User | null;

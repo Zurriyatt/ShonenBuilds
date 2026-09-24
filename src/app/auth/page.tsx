@@ -1504,7 +1504,7 @@ function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
             </div>
         </div>
     );
-}
+}   
 
 /* =========================================================
    APP ROOT

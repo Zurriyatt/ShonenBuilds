@@ -14,7 +14,7 @@
                             <Navbar onMenuClick={() => setSidebarVisible(true)}/>
                             <SideBar visible={sidebarVisible} onClose={() => setSidebarVisible(false)}  />
                         </header>
-                        <main className=""> {children}</main>
+                        <main className="pt-2"> {children}</main>
                     </div>
                 </UserProvider>
             </>
