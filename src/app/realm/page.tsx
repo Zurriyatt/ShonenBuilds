@@ -68,7 +68,7 @@ export default function Realm() {
         <>
             {/* ── Sticky header ── */}
             <div
-                className="sticky top-0 z-30 flex items-center justify-between px-4"
+                className="sticky top-0 z-10 flex items-center justify-between px-4"
                 style={{
                     height: 52,
                     background: "color-mix(in srgb, var(--background) 92%, transparent)",
@@ -191,18 +191,18 @@ export default function Realm() {
 
                         {/* Power level — THE loud element */}
                         <div className="relative z-10 mt-7 flex flex-col items-center">
-                            <span className="text-[10px] font-body font-semibold text-muted-foreground tracking-[0.24em] uppercase">
+                            <span className="text-[10px] font-body font-semibold text-muted-foreground tracking-[0.24em] uppercase ">
                                 Power Level
                             </span>
                             <span
-                                className="font-display font-bold leading-none tracking-[-0.045em] select-none mt-1.5"
+                                className="font-body font-bold leading-none tracking-[-0.045em] select-none mt-1.5"
                                 style={{
                                     fontSize: "clamp(64px,10vw,96px)",
                                     color: "var(--foreground)",
                                     textShadow: `0 0 64px ${world.glow}, 0 2px 0 rgba(0,0,0,0.5)`,
                                 }}
                             >
-                                {USER_DATA.user.powerLevel.toLocaleString()}
+                                {USER_DATA.user.powerLevel.toLocaleString()}923 
                             </span>
                             <span
                                 className="inline-flex items-center gap-1.5 text-[11px] font-body font-medium mt-2 tracking-[0.02em]"
