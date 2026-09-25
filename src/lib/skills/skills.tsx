@@ -10,7 +10,7 @@ export interface Skill {
     name: string;
     category: SkillCategory;
     tier: number;  
-    imagePath? :string;           // which tier this skill unlocks at
+    icon? :string;           // which tier this skill unlocks at
     parentSlug: string | null; // null = root node
     xpOnUnlock: number;        // one-time XP award
     repTargets: number[];      // progress milestones within the skill
@@ -36,7 +36,7 @@ export const SKILLS: Skill[] = [
     {
         slug: "standard-push-up",
         name: "Push Up",
-        imagePath : '/pushup.svg',
+        icon : '/pushup.svg',
         category: "push",
         tier: 1,
         parentSlug: "knee-push-up",
