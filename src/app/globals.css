@@ -1,14 +1,14 @@
-@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap");
+@import url("https://googleapis.com");
 @import "tailwindcss";
+
+/* 2. Define the global variable */
+:root {
+  --font-PowerInter: 'Inter', sans-serif;
+}
 
 /* =========================================================
    SHONENBUILDS THEME
    Structure: shadcn semantic tokens + brand aliases
-   ========================================================= */
-
-/* =========================================================
-   THEME — ShonenBuilds
-   Default: dark. Add .light on <html> to switch.
    ========================================================= */
 
 /* ---------- DARK (default) ---------- */
@@ -144,6 +144,9 @@
 
     --font-display: "Syne", sans-serif;
     --font-body: "DM Sans", sans-serif;
+    
+    /* Safely added your custom variable into the Tailwind theme engine */
+    --font-PowerInter: var(--font-PowerInter);
 
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
@@ -164,7 +167,7 @@
         height: 100%;
         background-color: var(--background);
         color: var(--foreground);
-        font-family: var(--font-body);
+        font-family: var(--font-body); /* Kept exactly where it was pointing */
     }
 
     :focus-visible {
