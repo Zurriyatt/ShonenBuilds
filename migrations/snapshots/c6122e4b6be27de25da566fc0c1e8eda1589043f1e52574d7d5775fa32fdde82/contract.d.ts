@@ -547,11 +547,10 @@ export namespace Models {
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     sessions: public_Session[];
-    skills: public_UserSkill[];
     stats: public_UserStats | null;
     streak: public_UserStreak | null;
     xp: public_UserXP | null;
-    readonly [RelationKeys]?: 'sessions' | 'skills' | 'stats' | 'streak' | 'xp';
+    readonly [RelationKeys]?: 'sessions' | 'stats' | 'streak' | 'xp';
   };
   export type public_UserStats = {
     id: CodecTypes['pg/text@1']['output'];
@@ -1327,17 +1326,6 @@ type ContractBase = Omit<
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'Session';
-                };
-                readonly cardinality: '1:N';
-                readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['userId'];
-                };
-              };
-              readonly skills: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'UserSkill';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {

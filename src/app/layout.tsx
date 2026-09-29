@@ -166,7 +166,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             </head>
 
-            <body className="min-h-full flex flex-col max-w-screen overflow-x-hidden bg-background text-foreground">
+            <body 
+            className="min-h-full max-h-full flex flex-col max-w-screen overflow-x-hidden bg-background text-foreground"
+            suppressHydrationWarning={true} >
                 <VisibleLayout>{children}</VisibleLayout>
             </body>
         </html>

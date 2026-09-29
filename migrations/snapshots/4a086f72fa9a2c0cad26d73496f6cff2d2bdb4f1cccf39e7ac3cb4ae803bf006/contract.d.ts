@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'c6122e4b6be27de25da566fc0c1e8eda1589043f1e52574d7d5775fa32fdde82'>;
+  StorageHashBase<'4a086f72fa9a2c0cad26d73496f6cff2d2bdb4f1cccf39e7ac3cb4ae803bf006'>;
 export type ExecutionHash =
-  ExecutionHashBase<'228295ba7bcb72e6460b0fe0d690517cf24f701098bccbb75d057ddb79ddcc37'>;
+  ExecutionHashBase<'0538fb1f91f44e6331e95917cbda497d7a5637296b06faacae7733c48c2f50c5'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -268,15 +268,6 @@ export type FieldOutputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
-    readonly UserSkill: {
-      readonly id: CodecTypes['pg/text@1']['output'];
-      readonly userId: CodecTypes['pg/text@1']['output'];
-      readonly skillSlug: CodecTypes['pg/text@1']['output'];
-      readonly bestSet: CodecTypes['pg/int4@1']['output'];
-      readonly masteredAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    };
     readonly UserStats: {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly userId: CodecTypes['pg/text@1']['output'];
@@ -341,15 +332,6 @@ export type FieldInputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
-    readonly UserSkill: {
-      readonly id: CodecTypes['pg/text@1']['input'];
-      readonly userId: CodecTypes['pg/text@1']['input'];
-      readonly skillSlug: CodecTypes['pg/text@1']['input'];
-      readonly bestSet: CodecTypes['pg/int4@1']['input'];
-      readonly masteredAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-    };
     readonly UserStats: {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly userId: CodecTypes['pg/text@1']['input'];
@@ -398,15 +380,6 @@ export type StorageColumnTypes = {
       readonly fingerprint: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly os: CodecTypes['pg/text@1']['output'] | null;
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly userId: CodecTypes['pg/text@1']['output'];
-    };
-    readonly user_skills: {
-      readonly bestSet: CodecTypes['pg/int4@1']['output'];
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly id: CodecTypes['pg/text@1']['output'];
-      readonly masteredAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-      readonly skillSlug: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly userId: CodecTypes['pg/text@1']['output'];
     };
@@ -474,15 +447,6 @@ export type StorageColumnInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly userId: CodecTypes['pg/text@1']['input'];
     };
-    readonly user_skills: {
-      readonly bestSet: CodecTypes['pg/int4@1']['input'];
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly id: CodecTypes['pg/text@1']['input'];
-      readonly masteredAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
-      readonly skillSlug: CodecTypes['pg/text@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly userId: CodecTypes['pg/text@1']['input'];
-    };
     readonly user_stats: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly currentStreak: CodecTypes['pg/int4@1']['input'];
@@ -547,11 +511,10 @@ export namespace Models {
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     sessions: public_Session[];
-    skills: public_UserSkill[];
     stats: public_UserStats | null;
     streak: public_UserStreak | null;
     xp: public_UserXP | null;
-    readonly [RelationKeys]?: 'sessions' | 'skills' | 'stats' | 'streak' | 'xp';
+    readonly [RelationKeys]?: 'sessions' | 'stats' | 'streak' | 'xp';
   };
   export type public_UserStats = {
     id: CodecTypes['pg/text@1']['output'];
@@ -608,17 +571,6 @@ export namespace Models {
     user: public_User;
     readonly [RelationKeys]?: 'user';
   };
-  export type public_UserSkill = {
-    id: CodecTypes['pg/text@1']['output'];
-    userId: CodecTypes['pg/text@1']['output'];
-    skillSlug: CodecTypes['pg/text@1']['output'];
-    bestSet: CodecTypes['pg/int4@1']['output'];
-    masteredAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    user: public_User;
-    readonly [RelationKeys]?: 'user';
-  };
 }
 
 export declare const models: {
@@ -628,7 +580,6 @@ export declare const models: {
     Session: Models.public_Session;
     UserXP: Models.public_UserXP;
     UserStreak: Models.public_UserStreak;
-    UserSkill: Models.public_UserSkill;
   };
 };
 
@@ -724,86 +675,6 @@ type ContractBase = Omit<
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'sessions';
-                    readonly columns: readonly ['userId'];
-                  };
-                  readonly target: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'users';
-                    readonly columns: readonly ['id'];
-                  };
-                },
-              ];
-            };
-            readonly user_skills: {
-              columns: {
-                readonly id: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                };
-                readonly userId: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                };
-                readonly skillSlug: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                };
-                readonly bestSet: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
-                  };
-                };
-                readonly masteredAt: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                  readonly nullable: true;
-                };
-                readonly createdAt: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                  readonly nullable: false;
-                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
-                };
-                readonly updatedAt: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                  readonly nullable: false;
-                };
-              };
-              primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [{ readonly columns: readonly ['userId', 'skillSlug'] }];
-              indexes: readonly [
-                {
-                  readonly name: 'user_skills_userId_idx_a489d58a';
-                  readonly prefix: 'user_skills_userId_idx';
-                  readonly columns: readonly ['userId'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'user_skills_skillSlug_idx_abb56e11';
-                  readonly prefix: 'user_skills_skillSlug_idx';
-                  readonly columns: readonly ['skillSlug'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'user_skills_masteredAt_idx_85ac5910';
-                  readonly prefix: 'user_skills_masteredAt_idx';
-                  readonly columns: readonly ['masteredAt'];
-                  readonly unique: false;
-                },
-              ];
-              foreignKeys: readonly [
-                {
-                  readonly source: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'user_skills';
                     readonly columns: readonly ['userId'];
                   };
                   readonly target: {
@@ -1175,10 +1046,6 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'UserStreak';
     };
-    readonly user_skills: {
-      readonly namespace: 'public' & NamespaceId;
-      readonly model: 'UserSkill';
-    };
   };
   readonly domain: {
     readonly namespaces: {
@@ -1334,17 +1201,6 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['userId'];
                 };
               };
-              readonly skills: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'UserSkill';
-                };
-                readonly cardinality: '1:N';
-                readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['userId'];
-                };
-              };
               readonly stats: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -1395,71 +1251,6 @@ type ContractBase = Omit<
                 readonly path: { readonly column: 'path' };
                 readonly goal: { readonly column: 'goal' };
                 readonly why: { readonly column: 'why' };
-                readonly createdAt: { readonly column: 'createdAt' };
-                readonly updatedAt: { readonly column: 'updatedAt' };
-              };
-            };
-          };
-          readonly UserSkill: {
-            readonly fields: {
-              readonly id: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly userId: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly skillSlug: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly bestSet: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly masteredAt: {
-                readonly nullable: true;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
-              };
-              readonly createdAt: {
-                readonly nullable: false;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
-              };
-              readonly updatedAt: {
-                readonly nullable: false;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
-              };
-            };
-            readonly relations: {
-              readonly user: {
-                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
-                readonly cardinality: 'N:1';
-                readonly nullable: false;
-                readonly on: {
-                  readonly localFields: readonly ['userId'];
-                  readonly targetFields: readonly ['id'];
-                };
-              };
-            };
-            readonly storage: {
-              readonly table: 'user_skills';
-              readonly namespaceId: 'public';
-              readonly fields: {
-                readonly id: { readonly column: 'id' };
-                readonly userId: { readonly column: 'userId' };
-                readonly skillSlug: { readonly column: 'skillSlug' };
-                readonly bestSet: { readonly column: 'bestSet' };
-                readonly masteredAt: { readonly column: 'masteredAt' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
               };
@@ -1731,23 +1522,6 @@ type ContractBase = Omit<
           readonly ref: {
             readonly namespace: 'public';
             readonly table: 'sessions';
-            readonly column: 'updatedAt';
-          };
-          readonly onCreate: { readonly kind: 'generator'; readonly id: 'instantNow' };
-          readonly onUpdate: { readonly kind: 'generator'; readonly id: 'instantNow' };
-        },
-        {
-          readonly ref: {
-            readonly namespace: 'public';
-            readonly table: 'user_skills';
-            readonly column: 'id';
-          };
-          readonly onCreate: { readonly kind: 'generator'; readonly id: 'cuid2' };
-        },
-        {
-          readonly ref: {
-            readonly namespace: 'public';
-            readonly table: 'user_skills';
             readonly column: 'updatedAt';
           };
           readonly onCreate: { readonly kind: 'generator'; readonly id: 'instantNow' };

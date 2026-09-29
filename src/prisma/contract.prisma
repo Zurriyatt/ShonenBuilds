@@ -1,10 +1,9 @@
 // use prisma-8
 
 model User {
-  // FIX: Explicitly use cuid(2) in Prisma 8
-  id        String   @id @default(cuid(2)) 
-  username  String   @unique
-  email     String   @unique
+  id        String       @id @default(cuid(2))
+  username  String       @unique
+  email     String       @unique
   name      String
   password  String
   world     String
@@ -13,35 +12,17 @@ model User {
   why       String
   stats     UserStats?
   sessions  Session[]
-
-  createdAt DateTime @default(now())
+  streak    UserStreak?
+  xp        UserXP?
+  skills    UserSkill[]   
+  createdAt DateTime     @default(now())
   updatedAt temporal.updatedAt()
 
   @@map("users")
 }
 
-model UserStats {
-  // FIX: Explicitly use cuid(2) in Prisma 8
-  id            String   @id @default(cuid(2)) 
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  xp            Int      @default(0)
-  level         Int      @default(1) 
-  tier          Int      @default(0) 
-  powerLevel    Int      @default(10)
-  currentStreak Int      @default(0)
-  longestStreak Int      @default(0)
-  totalWorkouts Int      @default(0)
-
-  createdAt     DateTime @default(now())
-  updatedAt     temporal.updatedAt()
-
-  @@map("user_stats")
-}
-
 model Session {
-  // FIX: Explicitly use cuid(2) in Prisma 8
-  id          String   @id @default(cuid(2)) 
+  id          String   @id @default(cuid(2))
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   fingerprint String?
@@ -53,6 +34,56 @@ model Session {
   expiresAt   DateTime
   createdAt   DateTime @default(now())
   updatedAt   temporal.updatedAt()
-  
+
   @@map("sessions")
+}
+
+model UserXP {
+  id           String    @id @default(cuid(2))
+  userId       String    @unique
+  totalXp      Int       @default(0)
+  skillXp      Int       @default(0)
+  streakXp     Int       @default(0)
+  streakDays   Int       @default(0)
+  lastTrainedAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    temporal.updatedAt()
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([totalXp])
+  @@map("user_xp")
+}
+
+model UserStreak {
+  id               String    @id @default(cuid(2))
+  userId           String    @unique
+  currentStreak    Int       @default(0)
+  longestStreak    Int       @default(0)
+  lastCheckInDate  String?
+  lastCheckInAt    DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        temporal.updatedAt()
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([currentStreak])
+  @@map("user_streaks")
+}
+
+model UserSkill {
+  id         String    @id @default(cuid(2))
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  skillSlug  String
+  bestSet    Int       @default(0)
+  masteredAt DateTime?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  temporal.updatedAt()
+
+  @@unique([userId, skillSlug])
+  @@index([userId])
+  @@index([skillSlug])
+  @@index([masteredAt])
+  @@map("user_skills")
 }

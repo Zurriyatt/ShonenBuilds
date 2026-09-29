@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import { db } from "@/prisma/db";
 import { authToken } from "@/app/api/auth/login/route";
 
+import { updateStreak } from "../user/streak";
 const JWT_SECRET = process.env.JWT_SECRET as string;
 if (!JWT_SECRET) {
     throw new Error("JWT_SECRET is missing from environment variables");
@@ -20,7 +21,7 @@ export interface User {
     why: string;
     world: string;
     path: string;
-    // Progression (from UserStats)
+    // Progression
     xp: number;
     level: number;
     tier: number;
@@ -29,6 +30,9 @@ export interface User {
     longestStreak: number;
     totalWorkouts: number;
     sessionId: string;
+    // Milestone (transient — only set on the day a milestone is hit)
+    milestoneHit: number | null;
+    milestoneBonus: number;
 }
 
 export async function authVerify({ req }: { req: NextRequest }) {
@@ -66,11 +70,18 @@ export async function authVerify({ req }: { req: NextRequest }) {
             return { success: false, data: null, error: "Login expired!" };
         }
 
-        // 4. Stats must exist
-        const stats = await db.orm.public.UserStats.where({ userId: user.id }).first();
-        if (!stats) {
-            return { success: false, data: null, error: "Your profile stats are missing!" };
-        }
+        // 4. Streak update (cached — cheap on repeat calls same day)
+        const timezone = req.headers.get("x-user-timezone");
+        const streak = await updateStreak(user.id, timezone);
+
+        // 5. UserXP — the single source of truth for total XP
+        const xpRow = await db.orm.public.UserXP.where({ userId: user.id }).first();
+        const totalXp = xpRow?.totalXp ?? 0;
+
+        // 6. Derive level / tier from totalXp
+        const { getLevelFromXp, getTierFromLevel } = await import("@/lib/world/MPS");
+        const level = getLevelFromXp(totalXp);
+        const tier = getTierFromLevel(level);
 
         return {
             success: true,
@@ -84,13 +95,15 @@ export async function authVerify({ req }: { req: NextRequest }) {
                 why: user.why,
                 world: user.world,
                 path: user.path,
-                xp: stats.xp,
-                level: stats.level,
-                tier: stats.tier,
-                powerLevel: stats.powerLevel,
-                currentStreak: stats.currentStreak,
-                longestStreak: stats.longestStreak,
-                totalWorkouts: stats.totalWorkouts,
+                xp: totalXp,
+                level,
+                tier,
+                powerLevel: xpRow?.totalXp ?? 0, // placeholder — swap for real power calc later
+                currentStreak: streak.currentStreak,
+                longestStreak: streak.longestStreak,
+                totalWorkouts: 0, // derive later if needed
+                milestoneHit: streak.milestoneHit,
+                milestoneBonus: streak.milestoneBonus,
             },
         };
     } catch (err) {
