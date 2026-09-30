@@ -50,7 +50,7 @@ export interface Skill {
 const XP_GAIN_BY_TIER: Record<number, number> = {
     0: 217,
     1: 391,
-    2: 1_175,
+    2: 1_175, 
     3: 1_770,
     4: 3_200,
     5: 5_040,

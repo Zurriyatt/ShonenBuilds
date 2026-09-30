@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import { Thumbmark } from "@thumbmarkjs/thumbmarkjs";
 import { getAllWorlds, getRankName, getWorld, getWorldPaths } from "@/lib/world/MPS";
-
-import Link from "next/link";
+import toast from "react-hot-toast";
 /* =========================================================
    TYPES
    ========================================================= */
@@ -847,11 +846,12 @@ function StepIdentityCredentials({
             const json = await res.json();
 
             if (!json.success) {
+                toast.error('SignUp Failed');
                 setError(json.error || "Signup failed");
                 setLoading(false);
                 return;
             }
-
+            toast.success("Login Successful✅")
             onNext();
         } catch (err) {
             console.error("Signup error:", err);
@@ -1343,13 +1343,13 @@ function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
 
             const data = await res.json();
 
-            if (!res.ok) {
+            if (data.success) {
+                toast.error(data.error)
                 setError(data.error || "Login failed");
                 setLoading(false);
                 return;
             }
-
-            console.log("Logged in:", data.user);
+            toast.success('Logged In✅')
             setLoading(false);
         } catch (err) {
             console.error("Login error:", err);

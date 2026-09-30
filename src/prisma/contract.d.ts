@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'c6122e4b6be27de25da566fc0c1e8eda1589043f1e52574d7d5775fa32fdde82'>;
+  StorageHashBase<'4abc30d47ea8b460cff8c323f5663bed1716bc51303b0d217a0118a94ab55954'>;
 export type ExecutionHash =
-  ExecutionHashBase<'228295ba7bcb72e6460b0fe0d690517cf24f701098bccbb75d057ddb79ddcc37'>;
+  ExecutionHashBase<'02213744684a48056d8a8876c0d2e842f7aee2209154a4371d696e6c491f4aba'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -277,19 +277,6 @@ export type FieldOutputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
-    readonly UserStats: {
-      readonly id: CodecTypes['pg/text@1']['output'];
-      readonly userId: CodecTypes['pg/text@1']['output'];
-      readonly xp: CodecTypes['pg/int4@1']['output'];
-      readonly level: CodecTypes['pg/int4@1']['output'];
-      readonly tier: CodecTypes['pg/int4@1']['output'];
-      readonly powerLevel: CodecTypes['pg/int4@1']['output'];
-      readonly currentStreak: CodecTypes['pg/int4@1']['output'];
-      readonly longestStreak: CodecTypes['pg/int4@1']['output'];
-      readonly totalWorkouts: CodecTypes['pg/int4@1']['output'];
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    };
     readonly UserStreak: {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly userId: CodecTypes['pg/text@1']['output'];
@@ -306,8 +293,9 @@ export type FieldOutputTypes = {
       readonly totalXp: CodecTypes['pg/int4@1']['output'];
       readonly skillXp: CodecTypes['pg/int4@1']['output'];
       readonly streakXp: CodecTypes['pg/int4@1']['output'];
-      readonly streakDays: CodecTypes['pg/int4@1']['output'];
-      readonly lastTrainedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+      readonly totalWorkouts: CodecTypes['pg/int4@1']['output'];
+      readonly todayPower: CodecTypes['pg/int4@1']['output'];
+      readonly todayDate: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
@@ -350,19 +338,6 @@ export type FieldInputTypes = {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
-    readonly UserStats: {
-      readonly id: CodecTypes['pg/text@1']['input'];
-      readonly userId: CodecTypes['pg/text@1']['input'];
-      readonly xp: CodecTypes['pg/int4@1']['input'];
-      readonly level: CodecTypes['pg/int4@1']['input'];
-      readonly tier: CodecTypes['pg/int4@1']['input'];
-      readonly powerLevel: CodecTypes['pg/int4@1']['input'];
-      readonly currentStreak: CodecTypes['pg/int4@1']['input'];
-      readonly longestStreak: CodecTypes['pg/int4@1']['input'];
-      readonly totalWorkouts: CodecTypes['pg/int4@1']['input'];
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-    };
     readonly UserStreak: {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly userId: CodecTypes['pg/text@1']['input'];
@@ -379,8 +354,9 @@ export type FieldInputTypes = {
       readonly totalXp: CodecTypes['pg/int4@1']['input'];
       readonly skillXp: CodecTypes['pg/int4@1']['input'];
       readonly streakXp: CodecTypes['pg/int4@1']['input'];
-      readonly streakDays: CodecTypes['pg/int4@1']['input'];
-      readonly lastTrainedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
+      readonly totalWorkouts: CodecTypes['pg/int4@1']['input'];
+      readonly todayPower: CodecTypes['pg/int4@1']['input'];
+      readonly todayDate: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
@@ -410,19 +386,6 @@ export type StorageColumnTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly userId: CodecTypes['pg/text@1']['output'];
     };
-    readonly user_stats: {
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly currentStreak: CodecTypes['pg/int4@1']['output'];
-      readonly id: CodecTypes['pg/text@1']['output'];
-      readonly level: CodecTypes['pg/int4@1']['output'];
-      readonly longestStreak: CodecTypes['pg/int4@1']['output'];
-      readonly powerLevel: CodecTypes['pg/int4@1']['output'];
-      readonly tier: CodecTypes['pg/int4@1']['output'];
-      readonly totalWorkouts: CodecTypes['pg/int4@1']['output'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-      readonly userId: CodecTypes['pg/text@1']['output'];
-      readonly xp: CodecTypes['pg/int4@1']['output'];
-    };
     readonly user_streaks: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly currentStreak: CodecTypes['pg/int4@1']['output'];
@@ -436,10 +399,11 @@ export type StorageColumnTypes = {
     readonly user_xp: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
-      readonly lastTrainedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly skillXp: CodecTypes['pg/int4@1']['output'];
-      readonly streakDays: CodecTypes['pg/int4@1']['output'];
       readonly streakXp: CodecTypes['pg/int4@1']['output'];
+      readonly todayDate: CodecTypes['pg/text@1']['output'] | null;
+      readonly todayPower: CodecTypes['pg/int4@1']['output'];
+      readonly totalWorkouts: CodecTypes['pg/int4@1']['output'];
       readonly totalXp: CodecTypes['pg/int4@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly userId: CodecTypes['pg/text@1']['output'];
@@ -483,19 +447,6 @@ export type StorageColumnInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly userId: CodecTypes['pg/text@1']['input'];
     };
-    readonly user_stats: {
-      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly currentStreak: CodecTypes['pg/int4@1']['input'];
-      readonly id: CodecTypes['pg/text@1']['input'];
-      readonly level: CodecTypes['pg/int4@1']['input'];
-      readonly longestStreak: CodecTypes['pg/int4@1']['input'];
-      readonly powerLevel: CodecTypes['pg/int4@1']['input'];
-      readonly tier: CodecTypes['pg/int4@1']['input'];
-      readonly totalWorkouts: CodecTypes['pg/int4@1']['input'];
-      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
-      readonly userId: CodecTypes['pg/text@1']['input'];
-      readonly xp: CodecTypes['pg/int4@1']['input'];
-    };
     readonly user_streaks: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly currentStreak: CodecTypes['pg/int4@1']['input'];
@@ -509,10 +460,11 @@ export type StorageColumnInputTypes = {
     readonly user_xp: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
-      readonly lastTrainedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly skillXp: CodecTypes['pg/int4@1']['input'];
-      readonly streakDays: CodecTypes['pg/int4@1']['input'];
       readonly streakXp: CodecTypes['pg/int4@1']['input'];
+      readonly todayDate: CodecTypes['pg/text@1']['input'] | null;
+      readonly todayPower: CodecTypes['pg/int4@1']['input'];
+      readonly totalWorkouts: CodecTypes['pg/int4@1']['input'];
       readonly totalXp: CodecTypes['pg/int4@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly userId: CodecTypes['pg/text@1']['input'];
@@ -548,25 +500,9 @@ export namespace Models {
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     sessions: public_Session[];
     skills: public_UserSkill[];
-    stats: public_UserStats | null;
     streak: public_UserStreak | null;
     xp: public_UserXP | null;
-    readonly [RelationKeys]?: 'sessions' | 'skills' | 'stats' | 'streak' | 'xp';
-  };
-  export type public_UserStats = {
-    id: CodecTypes['pg/text@1']['output'];
-    userId: CodecTypes['pg/text@1']['output'];
-    xp: CodecTypes['pg/int4@1']['output'];
-    level: CodecTypes['pg/int4@1']['output'];
-    tier: CodecTypes['pg/int4@1']['output'];
-    powerLevel: CodecTypes['pg/int4@1']['output'];
-    currentStreak: CodecTypes['pg/int4@1']['output'];
-    longestStreak: CodecTypes['pg/int4@1']['output'];
-    totalWorkouts: CodecTypes['pg/int4@1']['output'];
-    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    user: public_User;
-    readonly [RelationKeys]?: 'user';
+    readonly [RelationKeys]?: 'sessions' | 'skills' | 'streak' | 'xp';
   };
   export type public_Session = {
     id: CodecTypes['pg/text@1']['output'];
@@ -589,8 +525,9 @@ export namespace Models {
     totalXp: CodecTypes['pg/int4@1']['output'];
     skillXp: CodecTypes['pg/int4@1']['output'];
     streakXp: CodecTypes['pg/int4@1']['output'];
-    streakDays: CodecTypes['pg/int4@1']['output'];
-    lastTrainedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
+    totalWorkouts: CodecTypes['pg/int4@1']['output'];
+    todayPower: CodecTypes['pg/int4@1']['output'];
+    todayDate: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     user: public_User;
@@ -624,7 +561,6 @@ export namespace Models {
 export declare const models: {
   public: {
     User: Models.public_User;
-    UserStats: Models.public_UserStats;
     Session: Models.public_Session;
     UserXP: Models.public_UserXP;
     UserStreak: Models.public_UserStreak;
@@ -814,111 +750,6 @@ type ContractBase = Omit<
                 },
               ];
             };
-            readonly user_stats: {
-              columns: {
-                readonly id: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                };
-                readonly userId: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                };
-                readonly xp: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
-                  };
-                };
-                readonly level: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
-                  };
-                };
-                readonly tier: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
-                  };
-                };
-                readonly powerLevel: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 10>;
-                  };
-                };
-                readonly currentStreak: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
-                  };
-                };
-                readonly longestStreak: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
-                  };
-                };
-                readonly totalWorkouts: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
-                  };
-                };
-                readonly createdAt: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                  readonly nullable: false;
-                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
-                };
-                readonly updatedAt: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                  readonly nullable: false;
-                };
-              };
-              primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [{ readonly columns: readonly ['userId'] }];
-              indexes: readonly [];
-              foreignKeys: readonly [
-                {
-                  readonly source: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'user_stats';
-                    readonly columns: readonly ['userId'];
-                  };
-                  readonly target: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'users';
-                    readonly columns: readonly ['id'];
-                  };
-                },
-              ];
-            };
             readonly user_streaks: {
               columns: {
                 readonly id: {
@@ -1035,7 +866,7 @@ type ContractBase = Omit<
                     readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
                   };
                 };
-                readonly streakDays: {
+                readonly totalWorkouts: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
                   readonly nullable: false;
@@ -1044,9 +875,18 @@ type ContractBase = Omit<
                     readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
                   };
                 };
-                readonly lastTrainedAt: {
-                  readonly nativeType: 'timestamptz';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
+                readonly todayPower: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
+                readonly todayDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
                   readonly nullable: true;
                 };
                 readonly createdAt: {
@@ -1165,10 +1005,6 @@ type ContractBase = Omit<
   readonly targetFamily: 'sql';
   readonly roots: {
     readonly users: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
-    readonly user_stats: {
-      readonly namespace: 'public' & NamespaceId;
-      readonly model: 'UserStats';
-    };
     readonly sessions: { readonly namespace: 'public' & NamespaceId; readonly model: 'Session' };
     readonly user_xp: { readonly namespace: 'public' & NamespaceId; readonly model: 'UserXP' };
     readonly user_streaks: {
@@ -1345,18 +1181,6 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['userId'];
                 };
               };
-              readonly stats: {
-                readonly to: {
-                  readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'UserStats';
-                };
-                readonly cardinality: '1:1';
-                readonly nullable: true;
-                readonly on: {
-                  readonly localFields: readonly ['id'];
-                  readonly targetFields: readonly ['userId'];
-                };
-              };
               readonly streak: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -1465,88 +1289,6 @@ type ContractBase = Omit<
               };
             };
           };
-          readonly UserStats: {
-            readonly fields: {
-              readonly id: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly userId: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
-              readonly xp: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly level: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly tier: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly powerLevel: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly currentStreak: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly longestStreak: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly totalWorkouts: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly createdAt: {
-                readonly nullable: false;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
-              };
-              readonly updatedAt: {
-                readonly nullable: false;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
-              };
-            };
-            readonly relations: {
-              readonly user: {
-                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
-                readonly cardinality: 'N:1';
-                readonly nullable: false;
-                readonly on: {
-                  readonly localFields: readonly ['userId'];
-                  readonly targetFields: readonly ['id'];
-                };
-              };
-            };
-            readonly storage: {
-              readonly table: 'user_stats';
-              readonly namespaceId: 'public';
-              readonly fields: {
-                readonly id: { readonly column: 'id' };
-                readonly userId: { readonly column: 'userId' };
-                readonly xp: { readonly column: 'xp' };
-                readonly level: { readonly column: 'level' };
-                readonly tier: { readonly column: 'tier' };
-                readonly powerLevel: { readonly column: 'powerLevel' };
-                readonly currentStreak: { readonly column: 'currentStreak' };
-                readonly longestStreak: { readonly column: 'longestStreak' };
-                readonly totalWorkouts: { readonly column: 'totalWorkouts' };
-                readonly createdAt: { readonly column: 'createdAt' };
-                readonly updatedAt: { readonly column: 'updatedAt' };
-              };
-            };
-          };
           readonly UserStreak: {
             readonly fields: {
               readonly id: {
@@ -1639,16 +1381,17 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
-              readonly streakDays: {
+              readonly totalWorkouts: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
-              readonly lastTrainedAt: {
+              readonly todayPower: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly todayDate: {
                 readonly nullable: true;
-                readonly type: {
-                  readonly kind: 'scalar';
-                  readonly codecId: 'pg/timestamptz-temporal@1';
-                };
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly createdAt: {
                 readonly nullable: false;
@@ -1685,8 +1428,9 @@ type ContractBase = Omit<
                 readonly totalXp: { readonly column: 'totalXp' };
                 readonly skillXp: { readonly column: 'skillXp' };
                 readonly streakXp: { readonly column: 'streakXp' };
-                readonly streakDays: { readonly column: 'streakDays' };
-                readonly lastTrainedAt: { readonly column: 'lastTrainedAt' };
+                readonly totalWorkouts: { readonly column: 'totalWorkouts' };
+                readonly todayPower: { readonly column: 'todayPower' };
+                readonly todayDate: { readonly column: 'todayDate' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
               };
@@ -1748,23 +1492,6 @@ type ContractBase = Omit<
           readonly ref: {
             readonly namespace: 'public';
             readonly table: 'user_skills';
-            readonly column: 'updatedAt';
-          };
-          readonly onCreate: { readonly kind: 'generator'; readonly id: 'instantNow' };
-          readonly onUpdate: { readonly kind: 'generator'; readonly id: 'instantNow' };
-        },
-        {
-          readonly ref: {
-            readonly namespace: 'public';
-            readonly table: 'user_stats';
-            readonly column: 'id';
-          };
-          readonly onCreate: { readonly kind: 'generator'; readonly id: 'cuid2' };
-        },
-        {
-          readonly ref: {
-            readonly namespace: 'public';
-            readonly table: 'user_stats';
             readonly column: 'updatedAt';
           };
           readonly onCreate: { readonly kind: 'generator'; readonly id: 'instantNow' };
