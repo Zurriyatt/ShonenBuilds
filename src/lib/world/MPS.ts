@@ -374,3 +374,21 @@ export function getWorldPaths(worldId: string) {
     const w = WORLD_CONFIG[worldId as keyof typeof WORLD_CONFIG];
     return w?.paths ?? [];
 }
+
+export function getXpRemainingForNextTier(
+    totalXp: number,
+    currentTier: number,
+): number {
+    const nextTier = POWER_TIERS.find((t) => t.tier === currentTier + 1);
+    if (!nextTier) return 0;   // already at max tier
+    const xpAtNextTier = getXpForLevel(nextTier.minLevel);
+    return Math.max(0, xpAtNextTier - totalXp);
+}
+
+export function getXpforNextTier(
+    tier:number
+): number {
+    const nextTier = POWER_TIERS.find(t=>t.tier===tier+1);
+    const level = nextTier?.minLevel;
+    return getXpForLevel(level||0);
+}

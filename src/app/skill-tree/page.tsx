@@ -4,7 +4,8 @@ import { getLayout, getConnections, BRANCH_LABELS } from "@/lib/skills/layout";
 import type { Positioned } from "@/lib/skills/layout";
 import type { Skill } from "@/lib/skills/skills";
 import { useUser } from "@/lib/auth/UserProvider";
-
+import { showXpToast, showMasteryToast, showLevelUpToast, showTierUpToast } from "@/lib/toast";
+import { getRankName, getXpForLevel, getWorld } from "@/lib/world/MPS";
 const CANVAS_SIZE = 4000;
 const HALF_CANVAS = CANVAS_SIZE / 2;
 
@@ -155,9 +156,14 @@ function SkillBottomSheet({
         setError(null);
 
         try {
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
             const res = await fetch("/api/skills/log", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-user-timezone": timezone,
+                },
                 body: JSON.stringify({ skillSlug: skill.slug, reps: value }),
             });
             const data = await res.json();
@@ -375,8 +381,6 @@ function SkillBottomSheet({
    ═════════════════════════════════════════════════════════ */
 
 export default function SkillTreePage() {
-    // Now stateFor can use skillMap:
-
     const { user, refresh } = useUser();
     const [skillMap, setSkillMap] = useState<Map<string, number>>(new Map());
 
@@ -396,6 +400,7 @@ export default function SkillTreePage() {
             })
             .catch((err) => console.error("Skill fetch failed:", err));
     }, [user]);
+
     function stateFor(skill: Skill): SkillState {
         if (!user) return "locked";
         if (user.tier < skill.tier) return "locked";
@@ -422,7 +427,6 @@ export default function SkillTreePage() {
     const connections = getConnections(layout);
 
     const selectedSkill = selectedSlug ? (layout.find((p) => p.skill.slug === selectedSlug)?.skill ?? null) : null;
-
 
     /* ── Pan ─────────────────────────────────────────────── */
     function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
@@ -460,21 +464,39 @@ export default function SkillTreePage() {
         levelUp: { from: number; to: number } | null;
         tierUp: { from: number; to: number } | null;
     }) {
-        // Close the sheet
+        const skill = selectedSkill;
         setSelectedSlug(null);
 
-        // Toast / celebration logic — build later
         if (data.tierUp) {
-            console.log(`🎉 TIER UP! ${data.tierUp.from} → ${data.tierUp.to}`);
+            const world = getWorld(user?.world as string);
+            showTierUpToast({
+                worldColor: world.color,
+                worldGlow: world.glow,
+                worldBorder: world.border,
+                worldIcon: world.icon,
+                worldName: world.display,
+                newRank: getRankName(user?.world!, user?.path!, data.tierUp.to),
+                tier: data.tierUp.to,
+            });
         } else if (data.levelUp) {
-            console.log(`✨ Level Up! ${data.levelUp.from} → ${data.levelUp.to}`);
+            showLevelUpToast({
+                from: data.levelUp.from,
+                to: data.levelUp.to,
+                xpForNext: getXpForLevel(data.levelUp.to + 1),
+            });
         } else if (data.justMastered) {
-            console.log(`👑 Mastered!`);
+            showMasteryToast({
+                skillName: skill?.name ?? "Skill",
+                xp: data.xpDelta,
+            });
         } else if (data.xpDelta > 0) {
-            console.log(`+${data.xpDelta} XP`);
+            showXpToast({
+                xp: data.xpDelta,
+                skillName: skill?.name ?? "Skill",
+                state: data.newState as "unlocked" | "in_progress" | "mastered",
+            });
         }
 
-        // Refresh global user so streak / level / xp update
         await refresh();
     }
 
@@ -500,7 +522,6 @@ export default function SkillTreePage() {
                         transform: `translate(${canvas.x}px, ${canvas.y}px) scale(${scale})`,
                     }}
                 >
-                    {/* Branch labels */}
                     {BRANCH_LABELS.map((l) => (
                         <div
                             key={l.name}
@@ -522,7 +543,6 @@ export default function SkillTreePage() {
                         </div>
                     ))}
 
-                    {/* SVG connectors */}
                     <svg className="absolute inset-0 pointer-events-none" width={CANVAS_SIZE} height={CANVAS_SIZE}>
                         {connections.map(({ from, to, key }) => (
                             <line
@@ -537,13 +557,11 @@ export default function SkillTreePage() {
                         ))}
                     </svg>
 
-                    {/* Nodes */}
                     {layout.map((p) => (
                         <PositionedNode key={p.skill.slug} p={p} state={stateFor(p.skill)} onSelect={setSelectedSlug} />
                     ))}
                 </div>
 
-                {/* Zoom controls */}
                 <div className="fixed bottom-6 right-6 z-30 flex flex-col gap-2">
                     <button
                         onClick={zoomIn}
@@ -564,11 +582,10 @@ export default function SkillTreePage() {
                 </div>
             </div>
 
-            {/* Bottom sheet */}
             <SkillBottomSheet
                 skill={selectedSkill}
                 state={selectedSkill ? stateFor(selectedSkill) : "locked"}
-                currentBestSet={0 /* TODO: read from user_skills map */}
+                currentBestSet={selectedSkill ? (skillMap.get(selectedSkill.slug) ?? 0) : 0}
                 onClose={() => setSelectedSlug(null)}
                 onLogged={handleLogged}
             />

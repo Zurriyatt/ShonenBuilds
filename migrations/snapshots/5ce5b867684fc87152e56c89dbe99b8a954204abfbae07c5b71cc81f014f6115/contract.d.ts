@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'4abc30d47ea8b460cff8c323f5663bed1716bc51303b0d217a0118a94ab55954'>;
+  StorageHashBase<'5ce5b867684fc87152e56c89dbe99b8a954204abfbae07c5b71cc81f014f6115'>;
 export type ExecutionHash =
   ExecutionHashBase<'02213744684a48056d8a8876c0d2e842f7aee2209154a4371d696e6c491f4aba'>;
 export type ProfileHash =
@@ -293,9 +293,8 @@ export type FieldOutputTypes = {
       readonly totalXp: CodecTypes['pg/int4@1']['output'];
       readonly skillXp: CodecTypes['pg/int4@1']['output'];
       readonly streakXp: CodecTypes['pg/int4@1']['output'];
-      readonly totalWorkouts: CodecTypes['pg/int4@1']['output'];
-      readonly todayPower: CodecTypes['pg/int4@1']['output'];
-      readonly todayDate: CodecTypes['pg/text@1']['output'] | null;
+      readonly streakDays: CodecTypes['pg/int4@1']['output'];
+      readonly lastTrainedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
@@ -354,9 +353,8 @@ export type FieldInputTypes = {
       readonly totalXp: CodecTypes['pg/int4@1']['input'];
       readonly skillXp: CodecTypes['pg/int4@1']['input'];
       readonly streakXp: CodecTypes['pg/int4@1']['input'];
-      readonly totalWorkouts: CodecTypes['pg/int4@1']['input'];
-      readonly todayPower: CodecTypes['pg/int4@1']['input'];
-      readonly todayDate: CodecTypes['pg/text@1']['input'] | null;
+      readonly streakDays: CodecTypes['pg/int4@1']['input'];
+      readonly lastTrainedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
@@ -399,11 +397,10 @@ export type StorageColumnTypes = {
     readonly user_xp: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly lastTrainedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
       readonly skillXp: CodecTypes['pg/int4@1']['output'];
+      readonly streakDays: CodecTypes['pg/int4@1']['output'];
       readonly streakXp: CodecTypes['pg/int4@1']['output'];
-      readonly todayDate: CodecTypes['pg/text@1']['output'] | null;
-      readonly todayPower: CodecTypes['pg/int4@1']['output'];
-      readonly totalWorkouts: CodecTypes['pg/int4@1']['output'];
       readonly totalXp: CodecTypes['pg/int4@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly userId: CodecTypes['pg/text@1']['output'];
@@ -460,11 +457,10 @@ export type StorageColumnInputTypes = {
     readonly user_xp: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly lastTrainedAt: CodecTypes['pg/timestamptz-temporal@1']['input'] | null;
       readonly skillXp: CodecTypes['pg/int4@1']['input'];
+      readonly streakDays: CodecTypes['pg/int4@1']['input'];
       readonly streakXp: CodecTypes['pg/int4@1']['input'];
-      readonly todayDate: CodecTypes['pg/text@1']['input'] | null;
-      readonly todayPower: CodecTypes['pg/int4@1']['input'];
-      readonly totalWorkouts: CodecTypes['pg/int4@1']['input'];
       readonly totalXp: CodecTypes['pg/int4@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly userId: CodecTypes['pg/text@1']['input'];
@@ -525,9 +521,8 @@ export namespace Models {
     totalXp: CodecTypes['pg/int4@1']['output'];
     skillXp: CodecTypes['pg/int4@1']['output'];
     streakXp: CodecTypes['pg/int4@1']['output'];
-    totalWorkouts: CodecTypes['pg/int4@1']['output'];
-    todayPower: CodecTypes['pg/int4@1']['output'];
-    todayDate: CodecTypes['pg/text@1']['output'] | null;
+    streakDays: CodecTypes['pg/int4@1']['output'];
+    lastTrainedAt: CodecTypes['pg/timestamptz-temporal@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     user: public_User;
@@ -866,7 +861,7 @@ type ContractBase = Omit<
                     readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
                   };
                 };
-                readonly totalWorkouts: {
+                readonly streakDays: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
                   readonly nullable: false;
@@ -875,18 +870,9 @@ type ContractBase = Omit<
                     readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
                   };
                 };
-                readonly todayPower: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
-                  readonly default: {
-                    readonly kind: 'literal';
-                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
-                  };
-                };
-                readonly todayDate: {
-                  readonly nativeType: 'text';
-                  readonly codecId: 'pg/text@1';
+                readonly lastTrainedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
                   readonly nullable: true;
                 };
                 readonly createdAt: {
@@ -1381,17 +1367,16 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
-              readonly totalWorkouts: {
+              readonly streakDays: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
-              readonly todayPower: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly todayDate: {
+              readonly lastTrainedAt: {
                 readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
               };
               readonly createdAt: {
                 readonly nullable: false;
@@ -1428,9 +1413,8 @@ type ContractBase = Omit<
                 readonly totalXp: { readonly column: 'totalXp' };
                 readonly skillXp: { readonly column: 'skillXp' };
                 readonly streakXp: { readonly column: 'streakXp' };
-                readonly totalWorkouts: { readonly column: 'totalWorkouts' };
-                readonly todayPower: { readonly column: 'todayPower' };
-                readonly todayDate: { readonly column: 'todayDate' };
+                readonly streakDays: { readonly column: 'streakDays' };
+                readonly lastTrainedAt: { readonly column: 'lastTrainedAt' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
               };

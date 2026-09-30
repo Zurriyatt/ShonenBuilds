@@ -41,12 +41,10 @@
     --input: #22203a;
     --ring: #8a5cf5;
 
-    /* brand extras */
     --gold: #f5a41e;
     --violet-dim: rgba(138, 92, 245, 0.15);
     --violet-glow: rgba(138, 92, 245, 0.35);
 
-    /* chart palette */
     --chart-1: #8a5cf5;
     --chart-2: #03e4ff;
     --chart-3: #f5a41e;
@@ -69,7 +67,6 @@
     --popover: #ffffff;
     --popover-foreground: #0d0d14;
 
-    /* Slightly deeper violet so it holds contrast on white */
     --primary: #7440e8;
     --primary-foreground: #ffffff;
 
@@ -79,7 +76,6 @@
     --muted: #f0eef6;
     --muted-foreground: #6b6880;
 
-    /* Cyan darkens for light bg so text/edges stay readable */
     --accent: #0099b8;
     --accent-foreground: #ffffff;
 
@@ -90,12 +86,10 @@
     --input: #e5e3ee;
     --ring: #7440e8;
 
-    /* brand extras — gold darkens slightly */
     --gold: #d8890f;
     --violet-dim: rgba(116, 64, 232, 0.1);
     --violet-glow: rgba(116, 64, 232, 0.22);
 
-    /* chart palette kept close, but primary/accent deepened */
     --chart-1: #7440e8;
     --chart-2: #0099b8;
     --chart-3: #d8890f;
@@ -107,7 +101,6 @@
 
 /* =========================================================
    TAILWIND THEME MAPPING
-   Always references the vars — so it auto-switches.
    ========================================================= */
 @theme inline {
     --color-background: var(--background);
@@ -144,8 +137,7 @@
 
     --font-display: "Syne", sans-serif;
     --font-body: "DM Sans", sans-serif;
-    
-    /* Safely added your custom variable into the Tailwind theme engine */
+
     --font-PowerInter: var(--font-PowerInter);
 
     --radius-sm: calc(var(--radius) - 4px);
@@ -153,10 +145,10 @@
     --radius-lg: var(--radius);
     --radius-xl: calc(var(--radius) + 4px);
 }
+
 /* =========================================================
    BASE LAYER
    ========================================================= */
-
 @layer base {
     * {
         border-color: var(--border);
@@ -167,7 +159,7 @@
         height: 100%;
         background-color: var(--background);
         color: var(--foreground);
-        font-family: var(--font-body); /* Kept exactly where it was pointing */
+        font-family: var(--font-body);
     }
 
     :focus-visible {
@@ -178,7 +170,7 @@
 }
 
 /* =========================================================
-   SCROLLBAR (hidden)
+   SCROLLBAR
    ========================================================= */
 
 * {
@@ -188,17 +180,12 @@
     display: none;
     box-sizing: border-box;
 }
-/* =========================================================
-   SCROLLBAR — premium (neutral → primary on hover)
-   ========================================================= */
 
-/* Firefox */
 html {
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
 }
 
-/* WebKit (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -209,7 +196,6 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-    /* The 3px border + background-clip = "floating pill" look */
     background: var(--muted-foreground);
     border: 3px solid transparent;
     background-clip: padding-box;
@@ -227,10 +213,10 @@ html {
     background-clip: padding-box;
 }
 
-/* Corner piece (where horizontal + vertical meet) */
 ::-webkit-scrollbar-corner {
     background: transparent;
 }
+
 /* =========================================================
    ANIMATIONS
    ========================================================= */
@@ -298,6 +284,91 @@ html {
 }
 .fade-up-5 {
     animation: fade-up 0.7s ease both 1.4s;
+}
+
+/* =========================================================
+   TOAST ANIMATIONS
+   ========================================================= */
+
+/* Icon enters with an elastic pop */
+@keyframes toast-icon-pop {
+    0% {
+        opacity: 0;
+        transform: scale(0.4) rotate(-10deg);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1.15) rotate(2deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+/* Icon subtle idle pulse */
+@keyframes toast-icon-pulse {
+    0%, 100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    50% {
+        transform: scale(1.06);
+        filter: brightness(1.15);
+    }
+}
+
+/* Ring expands and fades */
+@keyframes toast-ring-expand {
+    0% {
+        opacity: 0.9;
+        transform: scale(0.4);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(2.4);
+    }
+}
+
+/* Shockwave rings for big toasts */
+@keyframes toast-shockwave {
+    0% {
+        opacity: 0.8;
+        transform: scale(0.3);
+    }
+    60% {
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(2.8);
+    }
+}
+
+/* Big number rises with spring */
+@keyframes toast-number-rise {
+    0% {
+        opacity: 0;
+        transform: translateY(16px) scale(0.7);
+    }
+    55% {
+        opacity: 1;
+        transform: translateY(-4px) scale(1.06);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Light sweep across the card */
+@keyframes toast-shimmer {
+    0% {
+        transform: translateX(-120%);
+    }
+    100% {
+        transform: translateX(240%);
+    }
 }
 
 /* =========================================================

@@ -12,10 +12,6 @@
       "model": "UserSkill",
       "namespace": "public"
     },
-    "user_stats": {
-      "model": "UserStats",
-      "namespace": "public"
-    },
     "user_streaks": {
       "model": "UserStreak",
       "namespace": "public"
@@ -282,22 +278,6 @@
                   "namespace": "public"
                 }
               },
-              "stats": {
-                "cardinality": "1:1",
-                "nullable": true,
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "userId"
-                  ]
-                },
-                "to": {
-                  "model": "UserStats",
-                  "namespace": "public"
-                }
-              },
               "streak": {
                 "cardinality": "1:1",
                 "nullable": true,
@@ -469,144 +449,6 @@
               "table": "user_skills"
             }
           },
-          "UserStats": {
-            "fields": {
-              "createdAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "kind": "scalar"
-                }
-              },
-              "currentStreak": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "id": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "level": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "longestStreak": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "powerLevel": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "tier": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "totalWorkouts": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "updatedAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "kind": "scalar"
-                }
-              },
-              "userId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "xp": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              }
-            },
-            "relations": {
-              "user": {
-                "cardinality": "N:1",
-                "nullable": false,
-                "on": {
-                  "localFields": [
-                    "userId"
-                  ],
-                  "targetFields": [
-                    "id"
-                  ]
-                },
-                "to": {
-                  "model": "User",
-                  "namespace": "public"
-                }
-              }
-            },
-            "storage": {
-              "fields": {
-                "createdAt": {
-                  "column": "createdAt"
-                },
-                "currentStreak": {
-                  "column": "currentStreak"
-                },
-                "id": {
-                  "column": "id"
-                },
-                "level": {
-                  "column": "level"
-                },
-                "longestStreak": {
-                  "column": "longestStreak"
-                },
-                "powerLevel": {
-                  "column": "powerLevel"
-                },
-                "tier": {
-                  "column": "tier"
-                },
-                "totalWorkouts": {
-                  "column": "totalWorkouts"
-                },
-                "updatedAt": {
-                  "column": "updatedAt"
-                },
-                "userId": {
-                  "column": "userId"
-                },
-                "xp": {
-                  "column": "xp"
-                }
-              },
-              "namespaceId": "public",
-              "table": "user_stats"
-            }
-          },
           "UserStreak": {
             "fields": {
               "createdAt": {
@@ -731,13 +573,6 @@
                   "kind": "scalar"
                 }
               },
-              "lastTrainedAt": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "kind": "scalar"
-                }
-              },
               "skillXp": {
                 "nullable": false,
                 "type": {
@@ -745,14 +580,28 @@
                   "kind": "scalar"
                 }
               },
-              "streakDays": {
+              "streakXp": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
-              "streakXp": {
+              "todayDate": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "todayPower": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "totalWorkouts": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
@@ -807,17 +656,20 @@
                 "id": {
                   "column": "id"
                 },
-                "lastTrainedAt": {
-                  "column": "lastTrainedAt"
-                },
                 "skillXp": {
                   "column": "skillXp"
                 },
-                "streakDays": {
-                  "column": "streakDays"
-                },
                 "streakXp": {
                   "column": "streakXp"
+                },
+                "todayDate": {
+                  "column": "todayDate"
+                },
+                "todayPower": {
+                  "column": "todayPower"
+                },
+                "totalWorkouts": {
+                  "column": "totalWorkouts"
                 },
                 "totalXp": {
                   "column": "totalXp"
@@ -1045,129 +897,6 @@
                 }
               ]
             },
-            "user_stats": {
-              "columns": {
-                "createdAt": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "default": {
-                    "expression": "now()",
-                    "kind": "function"
-                  },
-                  "nativeType": "timestamptz",
-                  "nullable": false
-                },
-                "currentStreak": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": 0
-                  },
-                  "nativeType": "int4",
-                  "nullable": false
-                },
-                "id": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false
-                },
-                "level": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": 1
-                  },
-                  "nativeType": "int4",
-                  "nullable": false
-                },
-                "longestStreak": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": 0
-                  },
-                  "nativeType": "int4",
-                  "nullable": false
-                },
-                "powerLevel": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": 10
-                  },
-                  "nativeType": "int4",
-                  "nullable": false
-                },
-                "tier": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": 0
-                  },
-                  "nativeType": "int4",
-                  "nullable": false
-                },
-                "totalWorkouts": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": 0
-                  },
-                  "nativeType": "int4",
-                  "nullable": false
-                },
-                "updatedAt": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
-                  "nullable": false
-                },
-                "userId": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": false
-                },
-                "xp": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": 0
-                  },
-                  "nativeType": "int4",
-                  "nullable": false
-                }
-              },
-              "foreignKeys": [
-                {
-                  "onDelete": "cascade",
-                  "source": {
-                    "columns": [
-                      "userId"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "user_stats"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "users"
-                  }
-                }
-              ],
-              "indexes": [],
-              "primaryKey": {
-                "columns": [
-                  "id"
-                ]
-              },
-              "uniques": [
-                {
-                  "columns": [
-                    "userId"
-                  ]
-                }
-              ]
-            },
             "user_streaks": {
               "columns": {
                 "createdAt": {
@@ -1281,11 +1010,6 @@
                   "nativeType": "text",
                   "nullable": false
                 },
-                "lastTrainedAt": {
-                  "codecId": "pg/timestamptz-temporal@1",
-                  "nativeType": "timestamptz",
-                  "nullable": true
-                },
                 "skillXp": {
                   "codecId": "pg/int4@1",
                   "default": {
@@ -1295,7 +1019,7 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
-                "streakDays": {
+                "streakXp": {
                   "codecId": "pg/int4@1",
                   "default": {
                     "kind": "literal",
@@ -1304,7 +1028,21 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
-                "streakXp": {
+                "todayDate": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "todayPower": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "totalWorkouts": {
                   "codecId": "pg/int4@1",
                   "default": {
                     "kind": "literal",
@@ -1463,10 +1201,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "c6122e4b6be27de25da566fc0c1e8eda1589043f1e52574d7d5775fa32fdde82"
+    "storageHash": "4abc30d47ea8b460cff8c323f5663bed1716bc51303b0d217a0118a94ab55954"
   },
   "execution": {
-    "executionHash": "228295ba7bcb72e6460b0fe0d690517cf24f701098bccbb75d057ddb79ddcc37",
+    "executionHash": "02213744684a48056d8a8876c0d2e842f7aee2209154a4371d696e6c491f4aba",
     "mutations": {
       "defaults": [
         {
@@ -1519,32 +1257,6 @@
             "column": "updatedAt",
             "namespace": "public",
             "table": "user_skills"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "cuid2",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "id",
-            "namespace": "public",
-            "table": "user_stats"
-          }
-        },
-        {
-          "onCreate": {
-            "id": "instantNow",
-            "kind": "generator"
-          },
-          "onUpdate": {
-            "id": "instantNow",
-            "kind": "generator"
-          },
-          "ref": {
-            "column": "updatedAt",
-            "namespace": "public",
-            "table": "user_stats"
           }
         },
         {

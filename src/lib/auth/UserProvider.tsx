@@ -4,6 +4,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { User } from "./verify";
+import { showMilestoneToast, showStreakToast } from "../toast";
 
 interface UserContextValue {
     user: User | null;
@@ -31,7 +32,30 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             });
             const data = await res.json();
 
-            setUser(data.success ? data.data : null);
+            /* ── Guard: no user → bail before touching data.data ── */
+            if (!data.success || !data.data) {
+                setUser(null);
+                return;
+            }
+
+            setUser(data.data);
+
+            /* ── Toast triggers ────────────────────────────────────
+               milestoneHit  → big celebration (rare)
+               streakAdvanced → daily toast (once per day)
+               otherwise     → silent                                  */
+            if (data.data.milestoneHit) {
+                showMilestoneToast({
+                    days: data.data.milestoneHit,
+                    bonus: data.data.milestoneBonus,
+                    dailyXp: 25,
+                });
+            } else if (data.data.streakAdvanced) {
+                showStreakToast({
+                    days: data.data.currentStreak,
+                    xp: 25,
+                });
+            }
         } catch (err) {
             console.error("User fetch failed:", err);
             setUser(null);

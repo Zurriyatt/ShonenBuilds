@@ -1,22 +1,14 @@
 import { Temporal } from "temporal-polyfill";
 import { db } from "@/prisma/db";
 import { getCachedCheckIn, setCachedCheckIn } from "@/lib/cache/streak-cache";
-import { applyXp } from "./apply-xp";
-/* =========================================================
-   STREAK UPDATE
-
-   Called from the verify route on every authenticated request.
-   Cache-first: DB only touched when the day rolls over.
-
-   XP is written via applyXp() — the single write path.
-   ========================================================= */
+import { applyXp } from "@/lib/user/apply-xp";
 
 const DAILY_STREAK_XP = 25;
 
 const MILESTONE_BONUSES: Record<number, number> = {
-    7: 250,
-    30: 1_000,
-    90: 3_000,
+    7:   250,
+    30:  1_000,
+    90:  3_000,
     180: 7_500,
     360: 20_000,
 };
@@ -29,9 +21,12 @@ export interface StreakResult {
     milestoneHit: number | null;
     milestoneBonus: number;
     newTotalXp: number;
+    todayPower: number;      // ← NEW
     levelUp: { from: number; to: number } | null;
     tierUp: { from: number; to: number } | null;
 }
+
+
 
 function todayIn(timezone: string | null | undefined): string {
     try {
@@ -41,17 +36,19 @@ function todayIn(timezone: string | null | undefined): string {
     }
 }
 
-/* Helper: read current total from DB (for cache-hit path) */
 async function readTotal(userId: string): Promise<number> {
     const row = await db.orm.public.UserXP.where({ userId }).first();
     return row?.totalXp ?? 0;
 }
 
-export async function updateStreak(userId: string, timezone?: string | null): Promise<StreakResult> {
+export async function updateStreak(
+    userId: string,
+    timezone?: string | null,
+): Promise<StreakResult> {
     const tz = timezone || "UTC";
     const today = todayIn(tz);
 
-    /* ── Cache hit: already processed today ──────────────────── */
+    /* ── Cache hit ──────────────────────────────────────────── */
     const cached = await getCachedCheckIn(userId);
     if (cached === today) {
         const row = await db.orm.public.UserStreak.where({ userId }).first();
@@ -66,6 +63,7 @@ export async function updateStreak(userId: string, timezone?: string | null): Pr
             milestoneBonus: 0,
             newTotalXp: totalXp,
             levelUp: null,
+            todayPower:0,
             tierUp: null,
         };
     }
@@ -87,7 +85,9 @@ export async function updateStreak(userId: string, timezone?: string | null): Pr
         const now = Temporal.PlainDate.from(today);
         const daysDiff = now.since(last).days;
 
-        newStreak = daysDiff === 1 ? (existing?.currentStreak ?? 0) + 1 : 1;
+        newStreak = daysDiff === 1
+            ? (existing?.currentStreak ?? 0) + 1
+            : 1;
         isNewDay = true;
     }
 
@@ -105,20 +105,20 @@ export async function updateStreak(userId: string, timezone?: string | null): Pr
 
     const longestStreak = Math.max(existing?.longestStreak ?? 0, newStreak);
 
-    /* ── Persist streak row ──────────────────────────────────── */
+    /* ── Persist streak ──────────────────────────────────────── */
     if (isNewDay) {
         const nowInstant = Temporal.Now.instant();
 
         if (existing) {
-            await db.orm.public.UserStreak.update({
-                where: { userId },
-                data: {
+            // Prisma 8 fluent: .where().update()
+            await db.orm.public.UserStreak
+                .where({ userId })
+                .update({
                     currentStreak: newStreak,
                     longestStreak,
                     lastCheckInDate: today,
                     lastCheckInAt: nowInstant,
-                },
-            });
+                });
         } else {
             await db.orm.public.UserStreak.create({
                 userId,
@@ -130,32 +130,36 @@ export async function updateStreak(userId: string, timezone?: string | null): Pr
         }
     }
 
-    /* ── Apply XP — single source of truth ──────────────────── */
+    /* ── Apply XP ────────────────────────────────────────────── */
     let newTotalXp: number;
     let levelUp: { from: number; to: number } | null = null;
     let tierUp: { from: number; to: number } | null = null;
-
+    let todayPower = 0
     if (isNewDay && xpAwarded > 0) {
-        const change = await applyXp(userId, xpAwarded, "streak");
+        const change = await applyXp(userId, xpAwarded, DAILY_STREAK_XP, "streak");
         newTotalXp = change.newTotalXp;
         levelUp = change.levelUp;
         tierUp = change.tierUp;
+        todayPower = change.todayPower;
     } else {
-        newTotalXp = await readTotal(userId);
+const row = await db.orm.public.UserXP.where({ userId }).first();
+    newTotalXp = row?.totalXp ?? 0;
+    todayPower = row?.todayPower ?? 0;
     }
 
-    /* ── Warm cache for the rest of today ────────────────────── */
     await setCachedCheckIn(userId, today, tz);
 
     return {
-        currentStreak: newStreak,
-        longestStreak,
-        isNewDay,
-        xpAwarded,
-        milestoneHit,
-        milestoneBonus,
-        newTotalXp,
-        levelUp,
-        tierUp,
-    };
+    currentStreak: newStreak,
+    longestStreak,
+    isNewDay,
+    xpAwarded,
+    milestoneHit,
+    milestoneBonus,
+    newTotalXp,
+    todayPower,              // ← NEW
+    levelUp,
+    tierUp,
+};
+
 }

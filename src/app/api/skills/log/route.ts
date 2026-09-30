@@ -16,7 +16,7 @@ import { logSkillReps } from "@/lib/user/skill-xp";
 export async function POST(request: NextRequest) {
     try {
         /* ── 1. Auth ────────────────────────────────────────── */
-        const auth = await authVerify({ req: request });
+        const auth = await authVerify({ req: request, skipStreak:true });
 
         if (!auth.success || !auth.data) {
             return NextResponse.json(

@@ -161,7 +161,7 @@ const jsonLd = {
 /* ============ ROOT LAYOUT ============ */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="en" className={`${syne.variable} ${dmSans.variable} h-full antialiased`} suppressHydrationWarning>
+        <html lang="en" className={`${syne.variable} ${dmSans.variable} h-full antialiased `} suppressHydrationWarning>
             <head>
                 <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             </head>
