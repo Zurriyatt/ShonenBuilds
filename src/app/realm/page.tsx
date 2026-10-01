@@ -384,10 +384,10 @@ export default function Realm() {
                                     onClick = {() => {
                                         router.replace('/skill-tree')
                                     }}
-                                        className="absolute inset-y-0 -left-full w-1/2 pointer-events-none"
+                                        className="absolute inset-y-0 -left-full w-1/2  cursor-pointer"
                                         style={{
                                             background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.13),transparent)",
-                                            animation: "card-shimmer 3s ease-in-out infinite",
+                                            animation: "card-shimmer 3s ease-in-out infinite ",
                                         }}
                                     />
                                     Begin Session →
