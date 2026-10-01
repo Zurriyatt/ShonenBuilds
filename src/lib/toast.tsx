@@ -38,6 +38,7 @@ const baseOptions = {
         padding: 0,
         borderRadius: 0,
         maxWidth: "none",
+    
     },
 } as const;
 
