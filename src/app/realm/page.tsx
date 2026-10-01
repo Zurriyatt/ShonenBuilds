@@ -374,17 +374,18 @@ export default function Realm() {
                                     ))}
                                 </div>
                                 <button
-                                    className="w-full rounded-xl py-3.5 font-display font-bold text-[15px] tracking-[-0.01em] text-primary-foreground relative overflow-hidden active:scale-[0.98] transition-transform"
+                                onClick = {() => {
+                                        router.replace('/skill-tree')
+                                    }}
+                                    className="w-full rounded-xl py-3.5 font-display font-bold text-[15px] tracking-[-0.01em] text-primary-foreground relative overflow-hidden active:scale-[0.98] transition-transform hover:cursor-pointer"
                                     style={{
                                         background: "linear-gradient(135deg, var(--primary) 0%, var(--primary) 55%, var(--accent) 140%)",
                                         boxShadow: "0 0 28px color-mix(in srgb, var(--primary) 45%, transparent), 0 4px 20px rgba(0,0,0,0.4)",
                                     }}
                                 >
                                     <div
-                                    onClick = {() => {
-                                        router.replace('/skill-tree')
-                                    }}
-                                        className="absolute inset-y-0 -left-full w-1/2  cursor-pointer"
+                                    
+                                        className="absolute inset-y-0 -left-full w-1/2  "
                                         style={{
                                             background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.13),transparent)",
                                             animation: "card-shimmer 3s ease-in-out infinite ",
