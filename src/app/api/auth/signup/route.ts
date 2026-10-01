@@ -67,9 +67,6 @@
                 world,
             });
 
-            await db.orm.public.UserStats.create({
-                userId: user.id,
-            });
             // 6. Parse device info
             const ua = request.headers.get("user-agent") || "";
             const parser = new UAParser(ua); // Fixed: Correct initialization pattern for newer ua-parser-js versions
