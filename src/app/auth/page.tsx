@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Thumbmark } from "@thumbmarkjs/thumbmarkjs";
 import { getAllWorlds, getRankName, getWorld, getWorldPaths } from "@/lib/world/MPS";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 /* =========================================================
    TYPES
