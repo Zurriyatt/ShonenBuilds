@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getRankName } from "@/lib/world/MPS";
 import { useUser } from "@/lib/auth/UserProvider";
+import toast from "react-hot-toast";
 /* =========================================================
    NAV ITEMS
    ========================================================= */
@@ -438,11 +439,21 @@ export function SideBar({
                         style={{ borderTop: "1px solid color-mix(in srgb, var(--border) 55%, transparent)" }}
                     >
                         <p className="text-[10px] text-muted-foreground font-body mb-2 tracking-[0.08em]">
-                            v0.1 · ShonenBuilds
+                            v0.50.0 · ShonenBuilds
                         </p>
                         {loggedIn && (
-                            <button className="text-[12px] font-body transition-colors text-muted-foreground hover:text-destructive active:scale-95 min-h-[44px] flex items-center">
-                                Depart →
+                            <button
+                            onClick={async () => {
+                                const data = await fetch('/api/auth/logout',{method : "POST"})
+                                const dataa = await data.json();
+                                if(dataa.success){
+                                    toast.success('Logout Successful!');
+                                }else{
+                                    toast.error('Logout Failed!')
+                                }
+                            }}
+                            className="text-[12px] font-body transition-colors text-muted-foreground hover:text-destructive active:scale-95 min-h-[44px] flex items-center">
+                                LogOut →
                             </button>
                         )}
                     </div>
