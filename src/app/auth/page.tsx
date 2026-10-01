@@ -828,7 +828,7 @@ function StepIdentityCredentials({
         data.email.includes("@") &&
         data.email.includes(".") &&
         data.password.length >= 8;
-
+        const router = useRouter()
     const handleSubmit = async () => {
         if (!canProceed || loading) return;
 
@@ -853,7 +853,7 @@ function StepIdentityCredentials({
                 return;
             }
             toast.success("Login Successful✅")
-            onNext();
+            onNext();   
         } catch (err) {
             console.error("Signup error:", err);
             setError("Network error. Try again.");
@@ -1329,7 +1329,7 @@ function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
     const [showPwd, setShowPwd] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
+    const router = useRouter();
     const handleLogin = async () => {
         if (!identifier || !password) return;
 
@@ -1355,6 +1355,9 @@ function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
             }
             toast.success('Logged In✅')
             setLoading(false);
+            setTimeout(() =>{
+                router.replace('/realm');
+            },1000)
         } catch (err) {
             console.error("Login error:", err);
             setError("Network error. Try again.");
