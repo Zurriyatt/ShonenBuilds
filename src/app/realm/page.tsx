@@ -381,6 +381,9 @@ export default function Realm() {
                                     }}
                                 >
                                     <div
+                                    onClick = {() => {
+                                        router.push('/skill-tree')
+                                    }}
                                         className="absolute inset-y-0 -left-full w-1/2 pointer-events-none"
                                         style={{
                                             background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.13),transparent)",

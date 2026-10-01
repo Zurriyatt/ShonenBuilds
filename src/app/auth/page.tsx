@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Thumbmark } from "@thumbmarkjs/thumbmarkjs";
 import { getAllWorlds, getRankName, getWorld, getWorldPaths } from "@/lib/world/MPS";
+import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 /* =========================================================
    TYPES
@@ -1024,6 +1025,7 @@ function StepIdentityCredentials({
    STEP 6 — COMPLETE
    ========================================================= */
 function StepComplete({ data }: { data: FormData }) {
+    const router = useRouter();
     const world = WORLDS.find((w) => w.id === data.world)!;
     const goal = GOALS.find((g) => g.id === data.goal);
     const why = WHYS.find((w) => w.id === data.why);
@@ -1090,7 +1092,9 @@ function StepComplete({ data }: { data: FormData }) {
             </div>
 
             <div className="w-full animate-fade-up-3">
-                <PrimaryButton gradient="world">Enter the Arena →</PrimaryButton>
+                <PrimaryButton onClick = {() => {
+                    router.replace('/realm');
+                }}gradient="world">Enter the Arena →</PrimaryButton>
             </div>
         </div>
     );
@@ -1510,6 +1514,7 @@ function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
    APP ROOT
    ========================================================= */
 export default function App() {
+    const router = useRouter()
     const [screen, setScreen] = useState<Screen>("onboarding");
     const [step, setStep] = useState<Step>(0);
     const [formData, setFormData] = useState<FormData>({
