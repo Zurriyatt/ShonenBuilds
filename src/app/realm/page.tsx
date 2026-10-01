@@ -382,7 +382,7 @@ export default function Realm() {
                                 >
                                     <div
                                     onClick = {() => {
-                                        router.push('/skill-tree')
+                                        router.replace('/skill-tree')
                                     }}
                                         className="absolute inset-y-0 -left-full w-1/2 pointer-events-none"
                                         style={{
