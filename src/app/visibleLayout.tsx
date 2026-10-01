@@ -14,20 +14,24 @@ export function VisibleLayout({ children }: { children: React.ReactNode }) {
                 <Toaster
                     position="top-center"
                     gutter={12}
+                    containerStyle={{
+                        zIndex: 999,
+                    }}
                     toastOptions={{
                         duration: 3000,
                         style: {
-                            background: "transparent",
+                            background: "var(--primary)",
                             boxShadow: "none",
-                            padding: 0,
-                            borderRadius: 0,
+                            padding: "8px 16px", // 2. Giving it padding prevents text from collapsing
+                            borderRadius: "4px",
                             maxWidth: "none",
+                            color: "var(--text-primary)",
                         },
                     }}
                 />
 
                 <div className="w-full h-full max-w-screen  ">
-                    <header className="sticky top-0 left-0 right-0 z-30 ">
+                    <header className="sticky  top-0 left-0 right-0 z-30 ">
                         <Navbar onMenuClick={() => setSidebarVisible(true)} />
                         <SideBar visible={sidebarVisible} onClose={() => setSidebarVisible(false)} />
                     </header>
