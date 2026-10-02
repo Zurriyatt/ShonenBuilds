@@ -1,5 +1,3 @@
-// lib/worlds.ts
-
 export const EXP_LEVEL_CONFIG = [
   // ── Tier 0 — Initiation (L1-2) ───────────────────────
   { level: 1,   xpRequired: 0 },
@@ -126,7 +124,6 @@ export const EXP_LEVEL_CONFIG = [
 
 /* =========================================================
    2. LEVEL → TIER → POWER RANGE
-   Boundaries match EXP_LEVEL_CONFIG comment blocks.
    ========================================================= */
 export const POWER_TIERS = [
   { tier: 0,  minLevel: 1,   maxLevel: 2,    minPower: 10,        maxPower: 150 },
@@ -145,9 +142,6 @@ export const POWER_TIERS = [
 /* =========================================================
    3. WORLDS + PATHS
    ========================================================= */
-// lib/worlds.ts (top of file)
-
-// lib/world/MPS.ts
 export const WORLD_CONFIG = {
   multiverse: {
     display: "Human Verse",
@@ -233,6 +227,7 @@ export const WORLD_CONFIG = {
   },
 } as const;
 export type WorldId = keyof typeof WORLD_CONFIG;
+
 /* =========================================================
    4. WORLD + PATH + TIER → RANK NAME
    ========================================================= */
@@ -363,32 +358,35 @@ export function getUserRankState(xp: number, power: number, world: string, path:
 }
 
 export function getAllWorlds() {
-    return Object.entries(WORLD_CONFIG).map(([id, w]) => ({ id, ...w }));
+  return Object.entries(WORLD_CONFIG).map(([id, w]) => ({ id, ...w }));
 }
 
 export function getWorld(worldId: string) {
-    return WORLD_CONFIG[worldId as keyof typeof WORLD_CONFIG] ?? null;
+  return WORLD_CONFIG[worldId as keyof typeof WORLD_CONFIG] ?? null;
 }
 
 export function getWorldPaths(worldId: string) {
-    const w = WORLD_CONFIG[worldId as keyof typeof WORLD_CONFIG];
-    return w?.paths ?? [];
+  const w = WORLD_CONFIG[worldId as keyof typeof WORLD_CONFIG];
+  return w?.paths ?? [];
 }
 
+/* =========================================================
+   TIER BOUNDARY HELPERS
+   ========================================================= */
+
+/** Cumulative XP required at the start of the given tier. */
+export function getXpforNextTier(tier: number): number {
+  const nextTier = POWER_TIERS.find((t) => t.tier === tier + 1);
+  const level = nextTier?.minLevel;
+  return getXpForLevel(level || 0);
+}
+
+/** XP remaining until the user crosses into the next tier. */
 export function getXpRemainingForNextTier(
-    totalXp: number,
-    currentTier: number,
+  totalXp: number,
+  currentTier: number,
 ): number {
-    const nextTier = POWER_TIERS.find((t) => t.tier === currentTier + 1);
-    if (!nextTier) return 0;   // already at max tier
-    const xpAtNextTier = getXpForLevel(nextTier.minLevel);
-    return Math.max(0, xpAtNextTier - totalXp);
-}
-
-export function getXpforNextTier(
-    tier:number
-): number {
-    const nextTier = POWER_TIERS.find(t=>t.tier===tier+1);
-    const level = nextTier?.minLevel;
-    return getXpForLevel(level||0);
+  const boundary = getXpforNextTier(currentTier);
+  if (boundary === 0) return 0; // maxed out
+  return Math.max(0, boundary - totalXp);
 }

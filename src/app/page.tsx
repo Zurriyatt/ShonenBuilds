@@ -234,7 +234,7 @@ export default function Home() {
     return (
         <div className="min-h-screen max-w-screen font-body overflow-x-hidden">
             {/* ============ HERO ============ */}
-            <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6  pb-20 overflow-hidden">
+            <section className="relative min-h-[50vh] flex flex-col items-center  text-center px-6 pb-12 overflo    w-hidden">
                 {/* Violet orb */}
                 <div className="animate-orb absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[52%] w-[640px] h-[640px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(138,92,245,0.28)_0%,rgba(138,92,245,0.08)_45%,transparent_70%)] pointer-events-none z-0" />
                 {/* Cyan orb */}
@@ -266,10 +266,10 @@ export default function Home() {
                 </p>
 
                 {/* CTAs */}
-                <div className="fade-up-4 flex gap-3 z-[1] flex-wrap justify-center">
-                    <Link href="/auth">
+                <div className="fade-up-4 flex gap-3 z-1 flex-wrap justify-center">
+                    <Link href={userData.user?'/realm':'/auth'}>
                         <button className="bg-primary text-foreground border-none rounded-[10px] px-7 py-3.5 text-[15px] font-semibold font-body cursor-pointer tracking-[-0.01em] shadow-[0_0_24px_rgba(138,92,245,0.45),0_4px_16px_rgba(0,0,0,0.4)] transition-all duration-150 hover:-translate-y-0.5 hover:bg-[#9B6FF7] hover:shadow-[0_0_36px_rgba(138,92,245,0.65),0_6px_24px_rgba(0,0,0,0.4)]">
-                            Get Started Free
+                            {userData.user ? "Enter Your Realm" : "Get Started Free"}
                         </button>
                     </Link>
                     <button className="bg-transparent text-foreground/75 border border-border rounded-[10px] px-7 py-3.5 text-[15px] font-medium font-body cursor-pointer tracking-[-0.01em] transition-all duration-150 hover:border-primary/50 hover:text-foreground hover:-translate-y-0.5">
@@ -278,7 +278,7 @@ export default function Home() {
                 </div>
 
                 {/* Social proof */}
-                <div className="fade-up-4 mt-10 z-[1] flex items-center gap-3">
+                <div className="fade-up-4 mt-10 z-1 flex items-center gap-3">
                     <div className="flex">
                         {["#8A5CF5", "#7C4DEA", "#6B3DD8", "#5A2DC6"].map((c, i) => (
                             <div
@@ -359,7 +359,8 @@ export default function Home() {
             </section>
 
             {/* ============ FOOTER ============ */}
-            <footer className="border-t border-border px-12 py-8 flex items-center justify-between max-w-[1200px] mx-auto">
+            <footer className="border-t border-border px-4 sm:px-6 md:px-8 lg:px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 max-w-[1200px] mx-auto">
+
                 <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-[7px] bg-gradient-to-br from-secondary to-card border border-[rgba(255,107,26,0.4)] flex items-center justify-center">
                         <svg width="10" height="12" viewBox="0 0 16 18" fill="none">

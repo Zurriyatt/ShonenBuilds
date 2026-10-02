@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
         // 1. Already logged in?
         const auth = await authVerify({ req: request });
         if (auth.success) {
+            console.log('failingthere')
             return NextResponse.json(
                 { success: false, error: "You are already logged in!" },
                 { status: 400 }
