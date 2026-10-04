@@ -13,7 +13,7 @@ const NAV_ITEMS = [
     { icon: "⚔️", label: "Ranks", href: "/ranks" },
     { icon: "🏆", label: "Leaderboard", href: "/leaderboard" },
     { icon: "👥", label: "Squad", href: "/squads" },
-    { icon: "⚙️", label: "Sanctum", href: "/sanctum" },
+    { icon: "⚙️", label: "Your Dojo", href: "/dojo" },
 ];
 
 const WORLDS = [
