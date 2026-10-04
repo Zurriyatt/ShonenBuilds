@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Thumbmark } from "@thumbmarkjs/thumbmarkjs";
 import { getAllWorlds, getRankName, getWorld, getWorldPaths } from "@/lib/world/MPS";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/lib/auth/UserProvider";
 import toast from "react-hot-toast";
 /* =========================================================
    TYPES
@@ -828,7 +829,6 @@ function StepIdentityCredentials({
         data.email.includes("@") &&
         data.email.includes(".") &&
         data.password.length >= 8;
-        const router = useRouter()
     const handleSubmit = async () => {
         if (!canProceed || loading) return;
 
@@ -852,8 +852,8 @@ function StepIdentityCredentials({
                 setLoading(false);
                 return;
             }
-            toast.success("Login Successful✅")
-            onNext();   
+            toast.success("Account Created✅");
+            onNext(); 
         } catch (err) {
             console.error("Signup error:", err);
             setError("Network error. Try again.");
@@ -1025,7 +1025,6 @@ function StepIdentityCredentials({
    STEP 6 — COMPLETE
    ========================================================= */
 function StepComplete({ data }: { data: FormData }) {
-    const router = useRouter();
     const world = WORLDS.find((w) => w.id === data.world)!;
     const goal = GOALS.find((g) => g.id === data.goal);
     const why = WHYS.find((w) => w.id === data.why);
@@ -1093,7 +1092,7 @@ function StepComplete({ data }: { data: FormData }) {
 
             <div className="w-full animate-fade-up-3">
                 <PrimaryButton onClick = {() => {
-                    router.replace('/realm');
+                    window.location.reload();
                 }}gradient="world">Enter the Arena →</PrimaryButton>
             </div>
         </div>
@@ -1329,7 +1328,6 @@ function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
     const [showPwd, setShowPwd] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const router = useRouter();
     const handleLogin = async () => {
         if (!identifier || !password) return;
 
@@ -1347,7 +1345,7 @@ function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
 
             const data = await res.json();
 
-            if (data.success) {
+            if (!data.success) {
                 toast.error(data.error)
                 setError(data.error || "Login failed");
                 setLoading(false);
@@ -1356,7 +1354,7 @@ function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
             toast.success('Logged In✅')
             setLoading(false);
             setTimeout(() =>{
-                router.replace('/realm');
+                window.location.reload();
             },1000)
         } catch (err) {
             console.error("Login error:", err);
@@ -1517,6 +1515,8 @@ function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
    APP ROOT
    ========================================================= */
 export default function App() {
+    const user = useUser();
+    const userData= user.user;
     const router = useRouter()
     const [screen, setScreen] = useState<Screen>("onboarding");
     const [step, setStep] = useState<Step>(0);
@@ -1544,6 +1544,11 @@ export default function App() {
         setScreen("onboarding");
     }, []);
 
+    useEffect(()=>{
+        if(user.user){
+            router.replace('/realm')
+        }
+    }, [userData])
     return (
         <>
             <button

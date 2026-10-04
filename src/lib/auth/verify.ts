@@ -34,6 +34,7 @@ export interface User {
     milestoneHit: number | null;
     milestoneBonus: number;
     streakAdvanced?: boolean;
+    createdAt:Date
 }
 
 export async function authVerify({
@@ -119,6 +120,7 @@ export async function authVerify({
                     milestoneBonus: 0,
                     powerLevel: 0,
                     totalWorkouts: 0,
+                    createdAt : new Date(0).toISOString().substring(11,19)
                 },
             };
         }
@@ -164,6 +166,7 @@ export async function authVerify({
                 milestoneHit: streak.milestoneHit,
                 milestoneBonus: streak.milestoneBonus,
                 totalWorkouts: 0,
+                createdAt : user.createdAt
             },
         };
     } catch (err) {
