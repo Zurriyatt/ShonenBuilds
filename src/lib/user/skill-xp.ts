@@ -3,6 +3,7 @@ import { db } from "@/prisma/db";
 import { getSkill } from "@/lib/skills/skills";
 import { applyXp } from "@/lib/user/apply-xp";
 import { skillPower } from "@/lib/user/power";
+import { SkillState,stateFor,xpForState } from "./helpers";
 
 /* =========================================================
    SKILL XP UPDATER
@@ -16,22 +17,9 @@ import { skillPower } from "@/lib/user/power";
    · Both deltas applied via applyXp() — single write path
    ========================================================= */
 
-export type SkillState = "unlocked" | "in_progress" | "mastered";
 
-export function xpForState(xpGain: number, state: SkillState): number {
-    if (state === "mastered") return xpGain;
-    if (state === "in_progress") return Math.round((xpGain * 2) / 3);
-    return Math.round(xpGain / 3);
-}
 
-export function stateFor(
-    bestSet: number,
-    repsTarget: [number, number, number],
-): SkillState {
-    if (bestSet >= repsTarget[2]) return "mastered";
-    if (bestSet >= repsTarget[0]) return "in_progress";
-    return "unlocked";
-}
+
 
 export interface SkillLogResult {
     skillSlug: string;
@@ -48,11 +36,7 @@ export interface SkillLogResult {
     tierUp: { from: number; to: number } | null;
 }
 
-export async function logSkillReps(
-    userId: string,
-    skillSlug: string,
-    reps: number,
-): Promise<SkillLogResult | null> {
+export async function logSkillReps(userId: string, skillSlug: string, reps: number): Promise<SkillLogResult | null> {
     const skill = getSkill(skillSlug);
     if (!skill) return null;
     if (reps < 0) return null;
@@ -60,9 +44,7 @@ export async function logSkillReps(
     const target = skill.System.repsTarget;
     const xpGain = skill.System.xpGain;
 
-    const existing = await db.orm.public.UserSkill
-        .where({ userId, skillSlug })
-        .first();
+    const existing = await db.orm.public.UserSkill.where({ userId, skillSlug }).first();
 
     const previousBestSet = existing?.bestSet ?? 0;
     const previousState = stateFor(previousBestSet, target);
@@ -80,19 +62,14 @@ export async function logSkillReps(
     const newPower = skillPower(skill.tier, newState);
     const powerDelta = newPower - oldPower;
 
-    const justMastered =
-        previousState !== "mastered" && newState === "mastered";
+    const justMastered = previousState !== "mastered" && newState === "mastered";
 
     /* ── Write UserSkill ─────────────────────────────────── */
     if (existing) {
-        await db.orm.public.UserSkill
-            .where({ userId, skillSlug })
-            .update({
-                bestSet: newBestSet,
-                ...(justMastered
-                    ? { masteredAt: Temporal.Now.instant() }
-                    : {}),
-            });
+        await db.orm.public.UserSkill.where({ userId, skillSlug }).update({
+            bestSet: newBestSet,
+            ...(justMastered ? { masteredAt: Temporal.Now.instant() } : {}),
+        });
     } else {
         await db.orm.public.UserSkill.create({
             userId,

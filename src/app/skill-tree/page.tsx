@@ -4,8 +4,10 @@ import { getLayout, getConnections, BRANCH_LABELS } from "@/lib/skills/layout";
 import type { Positioned } from "@/lib/skills/layout";
 import type { Skill } from "@/lib/skills/skills";
 import { useUser } from "@/lib/auth/UserProvider";
+import { stateFor } from "@/lib/user/helpers";
 import { showXpToast, showMasteryToast, showLevelUpToast, showTierUpToast } from "@/lib/toast";
 import { getRankName, getXpForLevel, getWorld } from "@/lib/world/MPS";
+
 const CANVAS_SIZE = 4000;
 const HALF_CANVAS = CANVAS_SIZE / 2;
 
@@ -13,7 +15,55 @@ const HALF_CANVAS = CANVAS_SIZE / 2;
    TYPES
    ═════════════════════════════════════════════════════════ */
 
-type SkillState = "locked" | "unlocked" | "in_progress" | "mastered";
+type SkillState = "locked" | "available" | "unlocked" | "in_progress" | "mastered";
+
+/* ═════════════════════════════════════════════════════════
+   STATE COLORS — single source of truth for every state
+
+   · locked      → dim, matches card (invisible)
+   · available   → subtle neutral lift (clickable, but new)
+   · unlocked    → warm gold (started)
+   · in_progress → cyan accent (active)
+   · mastered    → violet glory (done)
+   ═════════════════════════════════════════════════════════ */
+
+const STATE_COLORS: Record<SkillState, {
+    border: string;
+    bg: string;
+    name: string;
+    label: string;
+}> = {
+    locked: {
+        border: "var(--border)",
+        bg: "var(--card)",
+        name: "var(--muted-foreground)",
+        label: "Locked",
+    },
+    available: {
+        border: "color-mix(in srgb, var(--foreground) 22%, var(--border))",
+        bg:     "color-mix(in srgb, var(--foreground) 8%, var(--card))",
+        name:   "var(--muted-foreground)",
+        label:  "Available",
+    },
+    unlocked: {
+        border: "color-mix(in srgb, var(--gold) 45%, transparent)",
+        bg:     "color-mix(in srgb, var(--gold) 8%, var(--card))",
+        name:   "var(--foreground)",
+        label:  "Unlocked",
+    },
+    in_progress: {
+        border: "color-mix(in srgb, var(--accent) 60%, transparent)",
+        bg:     "color-mix(in srgb, var(--accent) 10%, var(--card))",
+        name:   "var(--accent)",
+        label:  "In Progress",
+    },
+    mastered: {
+        border: "var(--primary)",
+        bg:     "color-mix(in srgb, var(--primary) 15%, var(--card))",
+        name:   "var(--primary)",
+        label:  "Mastered",
+    },
+};
 
 /* ═════════════════════════════════════════════════════════
    PLACEHOLDER ICON
@@ -34,30 +84,13 @@ function PlaceholderIcon() {
 
 function SkillNode({ skill, state, onClick }: { skill: Skill; state: SkillState; onClick: () => void }) {
     const hasIcon = !!skill.icon;
-    const isLocked = state === "locked";
-
-    const borderColor =
-        state === "mastered"
-            ? "var(--primary)"
-            : state === "in_progress"
-              ? "var(--accent)"
-              : state === "unlocked"
-                ? "var(--gold)"
-                : "var(--border)";
-
-    const bg = isLocked
-        ? "var(--card)"
-        : state === "mastered"
-          ? "color-mix(in srgb, var(--primary) 12%, var(--card))"
-          : state === "in_progress"
-            ? "color-mix(in srgb, var(--accent) 10%, var(--card))"
-            : "color-mix(in srgb, var(--gold) 10%, var(--card))";
+    const colors = STATE_COLORS[state];
 
     return (
         <button
             onClick={onClick}
             className="w-16 h-16 rounded-full border-2 overflow-hidden flex items-center justify-center transition-all cursor-pointer hover:scale-110"
-            style={{ borderColor, background: bg }}
+            style={{ borderColor: colors.border, background: colors.bg }}
         >
             {hasIcon ? (
                 <img src={skill.icon as string} alt={skill.name} className="w-full h-full object-cover scale-[1.25]" />
@@ -84,15 +117,7 @@ function PositionedNode({
     onSelect: (slug: string) => void;
 }) {
     const { skill, x, y } = p;
-
-    const nameColor =
-        state === "mastered"
-            ? "var(--primary)"
-            : state === "in_progress"
-              ? "var(--accent)"
-              : state === "unlocked"
-                ? "var(--foreground)"
-                : "var(--muted-foreground)";
+    const colors = STATE_COLORS[state];
 
     return (
         <div>
@@ -105,7 +130,7 @@ function PositionedNode({
                     left: x,
                     top: y + 42,
                     transform: "translateX(-50%)",
-                    color: nameColor,
+                    color: colors.name,
                 }}
             >
                 {skill.name}
@@ -142,6 +167,7 @@ function SkillBottomSheet({
     const [error, setError] = useState<string | null>(null);
 
     const open = skill !== null;
+    const colors = STATE_COLORS[state];
 
     /* ── Submit reps ─────────────────────────────────────── */
     async function handleSubmit() {
@@ -182,25 +208,6 @@ function SkillBottomSheet({
             setLoading(false);
         }
     }
-
-    /* ── State colors ────────────────────────────────────── */
-    const stateLabel =
-        state === "mastered"
-            ? "Mastered"
-            : state === "in_progress"
-              ? "In Progress"
-              : state === "unlocked"
-                ? "Unlocked"
-                : "Locked";
-
-    const stateColor =
-        state === "mastered"
-            ? "var(--primary)"
-            : state === "in_progress"
-              ? "var(--accent)"
-              : state === "unlocked"
-                ? "var(--gold)"
-                : "var(--muted-foreground)";
 
     const target = skill?.System.repsTarget ?? [0, 0, 0];
     const unit = skill?.System.unit === "sec" ? "sec" : "reps";
@@ -251,12 +258,12 @@ function SkillBottomSheet({
                                     <span
                                         className="text-[10px] font-body font-bold tracking-[0.08em] uppercase px-2 py-[3px] rounded-full"
                                         style={{
-                                            color: stateColor,
-                                            background: `color-mix(in srgb, ${stateColor} 12%, transparent)`,
-                                            border: `1px solid color-mix(in srgb, ${stateColor} 35%, transparent)`,
+                                            color: colors.name,
+                                            background: `color-mix(in srgb, ${colors.name} 12%, transparent)`,
+                                            border: `1px solid color-mix(in srgb, ${colors.name} 35%, transparent)`,
                                         }}
                                     >
-                                        {stateLabel}
+                                        {colors.label}
                                     </span>
                                     <span className="text-[10px] font-body text-muted-foreground">
                                         Tier {skill.tier}
@@ -278,7 +285,7 @@ function SkillBottomSheet({
                                         className="flex flex-col items-center gap-1 rounded-xl py-2.5"
                                         style={{
                                             background: "var(--secondary)",
-                                            border: `1px solid ${isActive ? stateColor : "var(--border)"}`,
+                                            border: `1px solid ${isActive ? colors.name : "var(--border)"}`,
                                             opacity: isActive ? 1 : 0.6,
                                         }}
                                     >
@@ -287,7 +294,7 @@ function SkillBottomSheet({
                                         </span>
                                         <span
                                             className="font-display font-bold text-[16px]"
-                                            style={{ color: isActive ? stateColor : "var(--foreground)" }}
+                                            style={{ color: isActive ? colors.name : "var(--foreground)" }}
                                         >
                                             {target[i]} {unit}
                                         </span>
@@ -343,7 +350,7 @@ function SkillBottomSheet({
                                 </div>
                                 {currentBestSet > 0 && (
                                     <span className="text-[11px] font-body text-muted-foreground">
-                                        Current best: <strong style={{ color: stateColor }}>{currentBestSet}</strong>{" "}
+                                        Current best: <strong style={{ color: colors.name }}>{currentBestSet}</strong>{" "}
                                         {unit}
                                     </span>
                                 )}
@@ -401,16 +408,11 @@ export default function SkillTreePage() {
             .catch((err) => console.error("Skill fetch failed:", err));
     }, [user]);
 
-    function stateFor(skill: Skill): SkillState {
+    function stateForSkillTree(skill: Skill): SkillState {
         if (!user) return "locked";
         if (user.tier < skill.tier) return "locked";
-
-        const best = skillMap.get(skill.slug) ?? 0;
-        const target = skill.System.repsTarget;
-
-        if (best >= target[2]) return "mastered";
-        if (best >= target[0]) return "in_progress";
-        return "unlocked";
+        const bestReps = skillMap.get(skill.slug) || 0;
+        return stateFor(bestReps, skill.System.repsTarget) as SkillState;
     }
 
     const [scale, setScale] = useState(0.5);
@@ -493,7 +495,7 @@ export default function SkillTreePage() {
             showXpToast({
                 xp: data.xpDelta,
                 skillName: skill?.name ?? "Skill",
-                state: data.newState as "unlocked" | "in_progress" | "mastered",
+                state: data.newState as "available" | "unlocked" | "in_progress" | "mastered",
             });
         }
 
@@ -558,7 +560,7 @@ export default function SkillTreePage() {
                     </svg>
 
                     {layout.map((p) => (
-                        <PositionedNode key={p.skill.slug} p={p} state={stateFor(p.skill)} onSelect={setSelectedSlug} />
+                        <PositionedNode key={p.skill.slug} p={p} state={stateForSkillTree(p.skill)} onSelect={setSelectedSlug} />
                     ))}
                 </div>
 
@@ -584,7 +586,7 @@ export default function SkillTreePage() {
 
             <SkillBottomSheet
                 skill={selectedSkill}
-                state={selectedSkill ? stateFor(selectedSkill) : "locked"}
+                state={selectedSkill ? stateForSkillTree(selectedSkill) : "locked"}
                 currentBestSet={selectedSkill ? (skillMap.get(selectedSkill.slug) ?? 0) : 0}
                 onClose={() => setSelectedSlug(null)}
                 onLogged={handleLogged}

@@ -1,0 +1,28 @@
+AUTH
+  POST /api/auth/signup
+  POST /api/auth/login
+  POST /api/auth/logout
+  GET  /api/auth/verify
+
+SKILLS
+  GET  /api/skills/mine
+  POST /api/skills/log
+
+USERS
+  GET  /api/users/sessions
+  DELETE /api/users/sessions/:id
+  DELETE /api/users/sessions
+
+SQUADS (future)
+  ...design here...
+
+CHAT (future)
+  ...design here...
+
+RANKS
+  GET  /api/ranks              → list all tiers
+  GET  /api/ranks/:world/:path → specific path
+
+LEADERBOARD
+  GET  /api/leaderboard         → global top 100
+  GET  /api/leaderboard/friends → friends only

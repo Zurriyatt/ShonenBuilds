@@ -21,14 +21,15 @@
 export interface XpToastProps {
     xp: number;
     skillName: string;
-    state: "unlocked" | "in_progress" | "mastered";
+    state: "available" | "unlocked" | "in_progress" | "mastered" ;
 }
 
 export function XpToast({ xp, skillName, state }: XpToastProps) {
     const stateLabel =
         state === "mastered" ? "Mastered" :
         state === "in_progress" ? "In Progress" :
-        "Unlocked";
+        state === "unlocked" ? "Unlocked" 
+        : "Available";
 
     return (
         <div

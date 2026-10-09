@@ -1,6 +1,6 @@
 import "temporal-polyfill/full/global";
 import postgres from '@prisma/orm-postgres/runtime';
-import type { Contract } from './contract.d';
+import type { Contract } from "./contract";
 import contractJson from './contract.json' with { type: 'json' };
 
 const globalForPrisma = globalThis as unknown as { db?: any };

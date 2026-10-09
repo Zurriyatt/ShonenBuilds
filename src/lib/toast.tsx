@@ -49,7 +49,7 @@ const baseOptions = {
 export function showXpToast(props: {
     xp: number;
     skillName: string;
-    state: "unlocked" | "in_progress" | "mastered";
+    state: "available"| "unlocked" | "in_progress" | "mastered" ;
 }) {
     toast.custom(
         () => <XpToast {...props} />,

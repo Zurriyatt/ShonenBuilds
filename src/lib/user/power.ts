@@ -1,6 +1,7 @@
 import { db } from "@/prisma/db";
 import { getSkill } from "@/lib/skills/skills";
-
+import { SkillState } from "./helpers";
+import { stateFor } from "./helpers";
 /* =========================================================
    POWER LEVEL
 
@@ -50,22 +51,13 @@ const POWER_PER_SKILL_BY_TIER: Record<number, number> = (() => {
     return out;
 })();
 
-export type SkillState = "unlocked" | "in_progress" | "mastered";
 
 export function skillPower(skillTier: number, state: SkillState): number {
     const gain = POWER_PER_SKILL_BY_TIER[skillTier] ?? 0;
     if (state === "mastered") return gain;
-    if (state === "in_progress") return Math.round(gain / 3);
-    return 0;
-}
-
-function stateFor(
-    bestSet: number,
-    repsTarget: [number, number, number],
-): SkillState {
-    if (bestSet >= repsTarget[2]) return "mastered";
-    if (bestSet >= repsTarget[0]) return "in_progress";
-    return "unlocked";
+    if (state === "in_progress") return Math.round(2*gain / 3);
+    if (state === "unlocked") return Math.round(gain/3);
+    return 0
 }
 
 /* ── Compute total power for a user ──────────────────────── */
@@ -92,7 +84,7 @@ export async function computeUserPower(userId: string): Promise<number> {
     const streakRow = await db.orm.public.UserStreak
         .where({ userId })
         .first();
-
+    
     const streakDays = streakRow?.longestStreak ?? 0;
     const streakTotal = streakDays * POWER_PER_STREAK_DAY;
 

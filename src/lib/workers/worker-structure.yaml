@@ -1,0 +1,44 @@
+workers:
+  - name: streakReminder
+    schedule: "0 6 * * *" # 6 AM PKT daily
+    file: "streakReminder.ts"
+    description: "Maintains retention by warning users before streaks expire."
+    completed : 
+      value : false
+      why :  "In Progress..."
+    logic:
+      query: "Find users where lastCheckInDate < yesterday AND currentStreak > 0"
+      action: "Send push: 'Your streak is about to break'"
+
+  - name: trainingReminder
+    schedule: "0 7 * * *" # 7 AM PKT daily
+    file: "trainingReminder.ts"
+    description: "Re-engages inactive users."
+    completed : 
+      value : false
+      why : "In Progress..."
+    logic:
+      query: "Find users who haven't logged a skill in 3 days"
+      action: "Send push: 'Time to train, {username}'"
+
+  - name: squadMessage
+    schedule: "*/5 * * * *" # Every 5 minutes
+    file: "squadMessage.ts"
+    description: "Batches unread notifications for offline squad members."
+    completed : 
+      value : false
+      why : "Features are remaining and will be added later"
+    logic:
+      query: "Find unread squad messages from last 5 min"
+      action: "Notify offline squad members"
+
+  - name: teamMessage
+    schedule: "*/5 * * * *" # Every 5 minutes
+    file: "teamMessage.ts"
+    description: "Batches unread notifications for offline team members."
+    completed : 
+      value : false
+      why : "Features are remaining and will be added later"
+    logic:
+      query: "Find unread team messages from last 5 min"
+      action: "Notify offline team members"
