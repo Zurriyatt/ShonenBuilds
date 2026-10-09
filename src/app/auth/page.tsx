@@ -1548,7 +1548,7 @@ export default function App() {
         if(user.user){
             router.replace('/realm')
         }
-    }, [userData])
+    }, [userData]);
     return (
         <>
             <button

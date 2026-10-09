@@ -1,9 +1,9 @@
 // use prisma-8
 
 model User {
-  id        String       @id @default(cuid(2))
-  username  String       @unique
-  email     String       @unique
+  id        String        @id @default(cuid(2))
+  username  String        @unique
+  email     String        @unique
   name      String
   password  String
   world     String
@@ -14,7 +14,8 @@ model User {
   streak    UserStreak?
   xp        UserXP?
   skills    UserSkill[]
-  createdAt DateTime     @default(now())
+  settings  UserSettings? 
+  createdAt DateTime      @default(now())
   updatedAt temporal.updatedAt()
 
   @@map("users")
@@ -74,7 +75,7 @@ model UserStreak {
 
 model UserSkill {
   id         String    @id @default(cuid(2))
-  userId     String
+  userId     String     
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   skillSlug  String
   bestSet    Int       @default(0)
@@ -87,4 +88,15 @@ model UserSkill {
   @@index([skillSlug])
   @@index([masteredAt])
   @@map("user_skills")
+}
+
+model UserSettings {
+  id         String     @id @default(cuid(2))
+  userId     String     @unique
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  settings   Json       @default(json`{}`)
+  createdAt  DateTime   @default(now())
+  updatedAt  temporal.updatedAt()
+  
+  @@map("user_settings")
 }
