@@ -1,0 +1,12 @@
+GET backend-server/api/health
+
+###### Worker Serivce ###### 
+
+POST backend-server/api/
+Authorization: Bearer Secret_Key
+Content-Type: application/json
+
+{
+  success : true, 
+  totalResolved  : {Object};
+}
