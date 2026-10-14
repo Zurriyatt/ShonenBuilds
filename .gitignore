@@ -1,44 +1,75 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ====================================================================
+# DEPENDENCIES & PACKAGES
+# ====================================================================
+node_modules/
+/node_modules/
+framework/node_modules/
+workers/node_modules/
+package-lock.json
+framework/package-lock.json
+workers/package-lock.json
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# ====================================================================
+# NEXT.JS & BUILD OUTPUTS (The core issue)
+# ====================================================================
+.next/
+framework/.next/
+*.tsbuildinfo
+next-env.d.ts
 
-# testing
-/coverage
+# ====================================================================
+# ENVIRONMENT VARIABLES & SECRETS
+# ====================================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+framework/.env
+framework/.env.local
+workers/.env
 
-# next.js
-/.next/
-/out/
+# ====================================================================
+# AI AGENTS, EDITORS & IDE CACHES
+# ====================================================================
+.agents/
+.claude/
+.cursor/
+.devin/
+framework/.agents/
+framework/.claude/
+framework/.cursor/
+framework/.devin/
+workers/.agents/
+workers/.claude/
+workers/.cursor/
+workers/.devin/
 
-# production
-/build
+# Editor specific files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
 
-# misc
+# ====================================================================
+# PRISMA & DATABASE ARTIFACTS
+# ====================================================================
+# Keep migration files, but ignore SQLite databases if used locally
+*.db
+*.db-journal
+
+# ====================================================================
+# SYSTEM & MISC WASTES
+# ====================================================================
 .DS_Store
-*.pem
-
-# debug
+Thumbs.db
+Desktop.ini
+curl
+workers/curl
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-node_modules/
-dist/
-.env
