@@ -167,7 +167,7 @@ async function sendEmail(user: { email: string; username: string }, row: any) {
     const xpGained = row.lastWeekXp ?? 0;
 
     const { data, error } = await resend.emails.send({
-        from: "ShonenBuilds <onboarding@resend.dev>",
+        from: "ShonenBuilds <hello@shonenbuilds.online>",
         to: user.email,
         subject: `You gained ${xpGained.toLocaleString()} XP last week ⚡`,
         html: buildEmailHtml(user.username, row),
