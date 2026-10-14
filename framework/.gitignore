@@ -1,0 +1,92 @@
+# ====================================================================
+# DEPENDENCIES & PACKAGES
+# ====================================================================
+node_modules/
+/node_modules/
+framework/node_modules/
+workers/node_modules/
+package-lock.json
+framework/package-lock.json
+workers/package-lock.json
+
+# ====================================================================
+# NEXT.JS & BUILD OUTPUTS (The core issue)
+# ====================================================================
+.next/
+framework/.next/
+*.tsbuildinfo
+next-env.d.ts
+
+# ====================================================================
+# ENVIRONMENT VARIABLES & SECRETS
+# ====================================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+framework/.env
+framework/.env.local
+workers/.env
+
+# ====================================================================
+# AI AGENTS, EDITORS & IDE CACHES
+# ====================================================================
+.agents/
+.claude/
+.cursor/
+.devin/
+framework/.agents/
+framework/.claude/
+framework/.cursor/
+framework/.devin/
+workers/.agents/
+workers/.claude/
+workers/.cursor/
+workers/.devin/
+
+# Editor specific files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# ====================================================================
+# PRISMA & DATABASE ARTIFACTS
+# ====================================================================
+# Keep migration files, but ignore SQLite databases if used locally
+*.db
+*.db-journal
+
+# ====================================================================
+# SYSTEM & MISC WASTES
+# ====================================================================
+.DS_Store
+Thumbs.db
+Desktop.ini
+curl
+workers/curl
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+<<<<<<< HEAD:.gitignore
+=======
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+node_modules/
+dist/
+.env
+>>>>>>> dc4d779c9ded87ff690ebd0926e2bd2abddd70d6:framework/.gitignore
