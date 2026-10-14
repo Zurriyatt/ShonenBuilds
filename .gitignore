@@ -73,20 +73,3 @@ workers/curl
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-<<<<<<< HEAD:.gitignore
-=======
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-node_modules/
-dist/
-.env
->>>>>>> dc4d779c9ded87ff690ebd0926e2bd2abddd70d6:framework/.gitignore
