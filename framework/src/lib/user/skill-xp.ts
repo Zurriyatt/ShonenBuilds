@@ -3,8 +3,8 @@ import { db } from "@/prisma/db";
 import { getSkill } from "@/lib/skills/skills";
 import { applyXp } from "@/lib/user/apply-xp";
 import { skillPower } from "@/lib/user/power";
-import { SkillState,stateFor,xpForState } from "./helpers";
-
+import { SkillState, stateFor, xpForState } from "./helpers";
+import { XpChange } from "@/lib/user/apply-xp";
 /* =========================================================
    SKILL XP UPDATER
 
@@ -16,10 +16,6 @@ import { SkillState,stateFor,xpForState } from "./helpers";
    · Power is REPLACED — same 3-state model
    · Both deltas applied via applyXp() — single write path
    ========================================================= */
-
-
-
-
 
 export interface SkillLogResult {
     skillSlug: string;
@@ -36,7 +32,12 @@ export interface SkillLogResult {
     tierUp: { from: number; to: number } | null;
 }
 
-export async function logSkillReps(userId: string, skillSlug: string, reps: number): Promise<SkillLogResult | null> {
+export async function logSkillReps(
+    userId: string,
+    skillSlug: string,
+    reps: number,
+    timezone: string = "UTC",
+): Promise<SkillLogResult | null> {
     const skill = getSkill(skillSlug);
     if (!skill) return null;
     if (reps < 0) return null;
@@ -44,7 +45,9 @@ export async function logSkillReps(userId: string, skillSlug: string, reps: numb
     const target = skill.System.repsTarget;
     const xpGain = skill.System.xpGain;
 
-    const existing = await db.orm.public.UserSkill.where({ userId, skillSlug }).first();
+    const existing = await db.orm.public.UserSkill
+        .where({ userId, skillSlug })
+        .first();
 
     const previousBestSet = existing?.bestSet ?? 0;
     const previousState = stateFor(previousBestSet, target);
@@ -66,10 +69,12 @@ export async function logSkillReps(userId: string, skillSlug: string, reps: numb
 
     /* ── Write UserSkill ─────────────────────────────────── */
     if (existing) {
-        await db.orm.public.UserSkill.where({ userId, skillSlug }).update({
-            bestSet: newBestSet,
-            ...(justMastered ? { masteredAt: Temporal.Now.instant() } : {}),
-        });
+        await db.orm.public.UserSkill
+            .where({ userId, skillSlug })
+            .update({
+                bestSet: newBestSet,
+                ...(justMastered ? { masteredAt: Temporal.Now.instant() } : {}),
+            });
     } else {
         await db.orm.public.UserSkill.create({
             userId,
@@ -80,16 +85,10 @@ export async function logSkillReps(userId: string, skillSlug: string, reps: numb
     }
 
     /* ── Apply XP + power via single write path ──────────── */
-    let xpChange: {
-        newTotalXp: number;
-        delta: number;
-        todayPower: number;
-        levelUp: { from: number; to: number } | null;
-        tierUp: { from: number; to: number } | null;
-    };
+    let xpChange :XpChange;
 
     if (xpDelta !== 0 || powerDelta !== 0) {
-        xpChange = await applyXp(userId, xpDelta, powerDelta, "skill");
+        xpChange = await applyXp(userId, xpDelta, powerDelta, "skill", timezone);
     } else {
         const row = await db.orm.public.UserXP.where({ userId }).first();
         xpChange = {

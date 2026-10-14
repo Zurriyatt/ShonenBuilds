@@ -2,7 +2,7 @@ import { Temporal } from "temporal-polyfill";
 import { db } from "@/prisma/db";
 import { getLevelFromXp, getTierFromLevel } from "@/lib/world/MPS";
 import { computeUserPower } from "./power";
-
+    
 /* ── Helper: get this week's Monday as a string ───────── */
 function getThisMonday(timezone: string): string {
     const today = Temporal.Now.plainDateISO(timezone);
@@ -11,7 +11,13 @@ function getThisMonday(timezone: string): string {
     return today.subtract({ days: daysSinceMonday }).toString();
 }
 
-export interface XpChange { /* ... unchanged ... */ }
+export interface XpChange {
+    newTotalXp: number;
+    delta: number;
+    todayPower: number;
+    levelUp: { from: number; to: number } | null;
+    tierUp: { from: number; to: number } | null;
+}
 
 export async function applyXp(
     userId: string,
