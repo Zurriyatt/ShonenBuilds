@@ -221,6 +221,11 @@ export async function weeklyProgress(req: IncomingMessage, res: ServerResponse) 
         });
 
         console.log(`[weeklyProgress] ${succeeded} sent, ${failed} failed`);
+        console.log("Task finished successfully! Shutting down immediatel       y to save hours.");
+    
+        // This tells the platform the job is done. 
+        // The platform will kill the container instantly.
+        process.exit(0); 
 
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(

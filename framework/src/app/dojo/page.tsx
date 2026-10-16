@@ -1,16 +1,20 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useUser } from "@/lib/auth/UserProvider";
 import { getWorld } from "@/lib/world/MPS";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { usePushNotifications, getUnblockUrl } from "@/lib/push/usePushNotifications";
+import type { Settings } from "@/lib/user/defaultSettings";
+
 /*
  * LAYOUT
  * Mobile (< lg): single column — header → profile → sections stacked.
  * Desktop (≥ lg): sticky left sidebar (profile card + section nav w/ scroll-spy),
  * content right. Max width 1280px.
  */
+
 interface SessionRow {
     id: string;
     device: string;
@@ -21,9 +25,8 @@ interface SessionRow {
 }
 
 /* =========================================================
-   STATIC DATA (placeholders until backed by real settings)
+   STATIC
    ========================================================= */
-
 const SECTIONS = [
     { id: "character", label: "Character", icon: "🧬" },
     { id: "preferences", label: "Preferences", icon: "🎛️" },
@@ -32,12 +35,6 @@ const SECTIONS = [
     { id: "sessions", label: "Sessions", icon: "📡" },
     { id: "security", label: "Security", icon: "🔐" },
     { id: "danger", label: "Danger Zone", icon: "☠️" },
-];
-
-const SESSIONS = [
-    { id: "s1", device: "Chrome on Windows", place: "Karachi, PK", when: "Active now", icon: "🖥️", current: true },
-    { id: "s2", device: "Safari on iPhone 15", place: "Karachi, PK", when: "3h ago", icon: "📱", current: false },
-    { id: "s3", device: "Firefox on macOS", place: "Lahore, PK", when: "6d ago", icon: "💻", current: false },
 ];
 
 /* =========================================================
@@ -255,6 +252,46 @@ function Row({
     );
 }
 
+/* Push-aware toggle — different UI per browser state */
+function PushToggle({
+    pushState,
+    busy,
+    on,
+    label,
+    onChange,
+}: {
+    pushState: "loading" | "unsupported" | "blocked" | "enabled" | "disabled";
+    busy: boolean;
+    on: boolean;
+    label: string;
+    onChange: (v: boolean) => void;
+}) {
+    if (pushState === "unsupported") {
+        return <span className="text-[11px] font-body text-muted-foreground">Not supported</span>;
+    }
+    if (pushState === "blocked") {
+        return (
+            <a
+                href={getUnblockUrl()}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] font-body font-semibold shrink-0"
+                style={{ color: "var(--destructive)" }}
+            >
+                🔒 Unblock →
+            </a>
+        );
+    }
+    if (pushState === "loading") {
+        return <span className="text-[11px] font-body text-muted-foreground">···</span>;
+    }
+    return (
+        <div style={{ opacity: busy ? 0.5 : 1, pointerEvents: busy ? "none" : "auto" }}>
+            <Toggle on={on} onChange={onChange} label={label} />
+        </div>
+    );
+}
+
 /* =========================================================
    PAGE
    ========================================================= */
@@ -263,17 +300,82 @@ export default function Dojo() {
     const USER_DATA = useUser();
     const user = USER_DATA.user;
     const world = getWorld(user?.world as string);
+    const push = usePushNotifications();
 
-    const [dark, setDark] = useState(true);
-    const [revokeId,setRevokeId] = useState<string|null>(null)
-    const [prefs, setPrefs] = useState({ sound: true, haptics: false });
-    const [language, setLanguage] = useState("English");
-    const [notif, setNotif] = useState({ daily: true, streak: true, rival: true, squad: false, weekly: true });
-    const [visibility, setVisibility] = useState("Public");
-    const [privacy, setPrivacy] = useState({ feed: true, streak: false });
-    const [sessions, setSessions] = useState<SessionRow[]>([]);
-    const [active, setActive] = useState(SECTIONS[0].id);
-    const [confirmDelete, setConfirmDelete] = useState(false);
+    /* ── Dirty-state: original vs draft ── */
+    const [original, setOriginal] = useState<Settings | null>(null);
+    const [draft, setDraft] = useState<Settings | null>(null);
+    const [saving, setSaving] = useState(false);
+
+    const dirty = useMemo(
+        () => JSON.stringify(original) !== JSON.stringify(draft),
+        [original, draft],
+    );
+
+    /* Hydrate from user.settings */
+    useEffect(() => {
+        if (!user?.settings) return;
+        setOriginal(user.settings);
+        setDraft(user.settings);
+    }, [user?.settings]);
+
+    /* Discard */
+    const discard = () => {
+        if (original) setDraft(original);
+    };
+
+    /* Save */
+    const save = async () => {
+        if (!draft || saving) return;
+        setSaving(true);
+        try {
+            const res = await fetch("/api/users/settings", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(draft),
+            });
+            const data = await res.json();
+            if (!data.success) {
+                toast.error(data.error || "Failed to save");
+                return;
+            }
+            setOriginal(draft);
+            toast.success("Settings saved");
+            await USER_DATA.refresh();
+        } catch {
+            toast.error("Network error");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    /* Update a nested field in draft */
+    function patchDraft<K extends keyof Settings>(
+        section: K,
+        patch: Partial<Settings[K]>,
+    ) {
+        setDraft((prev) => {
+            if (!prev) return prev;
+            return { ...prev, [section]: { ...prev[section], ...patch } };
+        });
+    }
+
+    /* Push-required notification toggle — subscribe if turning ON */
+    async function handlePushToggle(key: keyof Settings["notifications"], value: boolean) {
+        if (value && push.state !== "enabled") {
+            if (push.state === "disabled") {
+                await push.subscribe();
+                if (typeof Notification === "undefined" || Notification.permission !== "granted") {
+                    return; // permission not granted, don't set the toggle
+                }
+            } else {
+                return; // blocked or unsupported
+            }
+        }
+        patchDraft("notifications", { [key]: value } as Partial<Settings["notifications"]>);
+    }
+
+    /* ── Session helpers ── */
     function toRelativeTime(iso: string | null): string {
         if (!iso) return "Unknown";
         const then = new Date(iso).getTime();
@@ -306,24 +408,28 @@ export default function Dojo() {
         };
     }
 
+    const [revokeId, setRevokeId] = useState<string | null>(null);
+    const [sessions, setSessions] = useState<SessionRow[]>([]);
+    const [active, setActive] = useState(SECTIONS[0].id);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [dark, setDark] = useState(true);
+
     useEffect(() => {
         async function fetchSessions() {
             try {
                 const res = await fetch("/api/users/sessions");
                 const data = await res.json();
-                if (data.success) {
-                    setSessions(data.data.sessions.map(toSessionRow));
-                }
+                if (data.success) setSessions(data.data.sessions.map(toSessionRow));
             } catch {
-                // silent — leave sessions empty
+                // silent
             }
         }
         fetchSessions();
-
         setDark(!document.documentElement.classList.contains("light"));
     }, []);
+
     async function handleRevokeOne(id: string) {
-        setRevokeId(id)
+        setRevokeId(id);
         const res = await fetch(`/api/users/sessions/${id}`, { method: "DELETE" });
         const data = await res.json();
         if (data.success) {
@@ -332,7 +438,7 @@ export default function Dojo() {
         } else {
             toast.error(data.error || "Failed to revoke");
         }
-        setRevokeId(null)
+        setRevokeId(null);
     }
 
     async function handleAllSessionRevoke() {
@@ -346,7 +452,7 @@ export default function Dojo() {
         }
     }
 
-    /* Scroll-spy for the desktop nav */
+    /* Scroll-spy */
     useEffect(() => {
         const io = new IntersectionObserver(
             (entries) => entries.forEach((e) => e.isIntersecting && setActive(e.target.id)),
@@ -362,6 +468,7 @@ export default function Dojo() {
     const toggleDark = (v: boolean) => {
         setDark(v);
         document.documentElement.classList.toggle("light", !v);
+        patchDraft("preferences", { darkMode: v });
     };
 
     const pathLabel =
@@ -370,8 +477,16 @@ export default function Dojo() {
         ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })
         : "—";
 
-    /* ── Profile card (shared mobile + desktop sidebar) ── */
-    const profileCard = user && (
+    /* Loading gate */
+    if (!user || !draft || !original) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh] text-muted-foreground font-body">
+                Loading...
+            </div>
+        );
+    }
+
+    const profileCard = (
         <div
             className="relative overflow-hidden rounded-[20px] p-5"
             style={{
@@ -454,86 +569,69 @@ export default function Dojo() {
                 <span className="font-display font-bold text-[13px] lg:text-[14px] tracking-[0.12em] lg:tracking-[0.2em] text-foreground/70 uppercase">
                     Your Dojo
                 </span>
-                <div
-                    className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground"
-                    style={{ animation: "orbit-spin 20s linear infinite" }}
-                >
-                    <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    >
-                        <circle cx="12" cy="12" r="3" />
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                    </svg>
-                </div>
+                <div className="w-8 h-8" />
             </div>
 
-            {user ? (
-                <div className="flex flex-col lg:grid lg:grid-cols-12 lg:gap-10 lg:max-w-[1280px] lg:mx-auto lg:w-full lg:px-8 lg:py-8 lg:items-start">
-                    {/* ═════════════ SIDEBAR (desktop) ═════════════ */}
-                    <aside className="hidden lg:flex lg:col-span-4 xl:col-span-3 flex-col gap-5 sticky top-[76px]">
-                        {profileCard}
-                        <nav
-                            className="flex flex-col gap-0.5 rounded-[18px] p-2"
-                            style={{ background: "var(--card)", border: "1px solid var(--border)" }}
-                        >
-                            <span className="px-3 pt-2 pb-2 text-[9px] font-body font-bold tracking-[0.24em] uppercase text-muted-foreground/60">
-                                Options
-                            </span>
-                            {SECTIONS.map((s) => {
-                                const isActive = active === s.id;
-                                const danger = s.id === "danger";
-                                return (
-                                    <button
-                                        key={s.id}
-                                        onClick={() =>
-                                            document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth" })
-                                        }
-                                        className="relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all hover:cursor-pointer hover:bg-secondary/50"
+            <div className="flex flex-col lg:grid lg:grid-cols-12 lg:gap-10 lg:max-w-[1280px] lg:mx-auto lg:w-full lg:px-8 lg:py-8 lg:items-start">
+                {/* ═════════════ SIDEBAR ═════════════ */}
+                <aside className="hidden lg:flex lg:col-span-4 xl:col-span-3 flex-col gap-5 sticky top-[76px]">
+                    {profileCard}
+                    <nav
+                        className="flex flex-col gap-0.5 rounded-[18px] p-2"
+                        style={{ background: "var(--card)", border: "1px solid var(--border)" }}
+                    >
+                        <span className="px-3 pt-2 pb-2 text-[9px] font-body font-bold tracking-[0.24em] uppercase text-muted-foreground/60">
+                            Options
+                        </span>
+                        {SECTIONS.map((s) => {
+                            const isActive = active === s.id;
+                            const danger = s.id === "danger";
+                            return (
+                                <button
+                                    key={s.id}
+                                    onClick={() =>
+                                        document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth" })
+                                    }
+                                    className="relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all hover:cursor-pointer hover:bg-secondary/50"
+                                    style={{
+                                        background: isActive
+                                            ? `linear-gradient(90deg, color-mix(in srgb, ${danger ? "var(--destructive)" : "var(--primary)"} 16%, transparent), transparent)`
+                                            : undefined,
+                                    }}
+                                >
+                                    {isActive && (
+                                        <span
+                                            className="absolute left-0 top-2 bottom-2 w-[2px] rounded-full"
+                                            style={{
+                                                background: danger ? "var(--destructive)" : "var(--primary)",
+                                                boxShadow: `0 0 10px ${danger ? "var(--destructive)" : "var(--primary)"}`,
+                                            }}
+                                        />
+                                    )}
+                                    <span className="text-[14px] w-5 text-center">{s.icon}</span>
+                                    <span
+                                        className="font-body text-[13px] font-semibold"
                                         style={{
-                                            background: isActive
-                                                ? `linear-gradient(90deg, color-mix(in srgb, ${danger ? "var(--destructive)" : "var(--primary)"} 16%, transparent), transparent)`
-                                                : undefined,
+                                            color: isActive
+                                                ? danger
+                                                    ? "var(--destructive)"
+                                                    : "var(--foreground)"
+                                                : "var(--muted-foreground)",
                                         }}
                                     >
-                                        {isActive && (
-                                            <span
-                                                className="absolute left-0 top-2 bottom-2 w-[2px] rounded-full"
-                                                style={{
-                                                    background: danger ? "var(--destructive)" : "var(--primary)",
-                                                    boxShadow: `0 0 10px ${danger ? "var(--destructive)" : "var(--primary)"}`,
-                                                }}
-                                            />
-                                        )}
-                                        <span className="text-[14px] w-5 text-center">{s.icon}</span>
-                                        <span
-                                            className="font-body text-[13px] font-semibold"
-                                            style={{
-                                                color: isActive
-                                                    ? danger
-                                                        ? "var(--destructive)"
-                                                        : "var(--foreground)"
-                                                    : "var(--muted-foreground)",
-                                            }}
-                                        >
-                                            {s.label}
-                                        </span>
-                                    </button>
-                                );
-                            })}
-                        </nav>
-                    </aside>
+                                        {s.label}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </nav>
+                </aside>
 
-                    {/* ═════════════ CONTENT ═════════════ */}
-                    <main className="flex flex-col gap-7 px-4 pt-5 pb-12 lg:px-0 lg:pt-0 lg:col-span-8 xl:col-span-9 lg:max-w-[760px]">
-                        {/* Desktop page heading */}
-                        <div className="hidden lg:flex flex-col gap-1">
+                {/* ═════════════ CONTENT ═════════════ */}
+                <main className="flex flex-col gap-7 px-4 pt-5 pb-12 lg:px-0 lg:pt-0 lg:col-span-8 xl:col-span-9 lg:max-w-[760px]">
+                    {/* ── Desktop heading with SAVE on top ── */}
+                    <div className="hidden lg:flex items-start justify-between gap-4">
+                        <div className="flex flex-col gap-1">
                             <span className="text-[10px] font-body font-bold tracking-[0.24em] uppercase text-muted-foreground/60">
                                 Settings · {world.display}
                             </span>
@@ -544,369 +642,473 @@ export default function Dojo() {
                                 Tune your training ground. Every master keeps a disciplined dojo.
                             </p>
                         </div>
+                        <SaveButtons
+                            dirty={dirty}
+                            saving={saving}
+                            onSave={save}
+                            onDiscard={discard}
+                            className="hidden lg:flex"
+                        />
+                    </div>
 
-                        {/* Mobile profile card */}
-                        <div className="lg:hidden">{profileCard}</div>
+                    {/* ── Mobile SAVE bar ── */}
+                    <div className="lg:hidden -mx-4 px-4 pb-1">
+                        <SaveButtons
+                            dirty={dirty}
+                            saving={saving}
+                            onSave={save}
+                            onDiscard={discard}
+                            className="flex"
+                            fullWidth
+                        />
+                    </div>
 
-                        {/* ═══════ CHARACTER ═══════ */}
-                        <Section
-                            id="character"
-                            index={1}
-                            title="Character"
-                            kicker={
-                                <button
-                                    onClick={() => router.push("/ranks")}
-                                    className="text-[11px] font-body font-semibold text-muted-foreground hover:text-primary transition-colors hover:cursor-pointer"
+                    <div className="lg:hidden">{profileCard}</div>
+
+                    {/* ═══════ CHARACTER ═══════ */}
+                    <Section
+                        id="character"
+                        index={1}
+                        title="Character"
+                        kicker={
+                            <button
+                                onClick={() => router.push("/ranks")}
+                                className="text-[11px] font-body font-semibold text-muted-foreground hover:text-primary transition-colors hover:cursor-pointer"
+                            >
+                                View Ranks →
+                            </button>
+                        }
+                    >
+                        <div className="grid grid-cols-2 lg:grid-cols-4">
+                            {[
+                                {
+                                    label: "World",
+                                    icon: world.icon,
+                                    value: world.display,
+                                    color: world.color,
+                                    locked: true,
+                                },
+                                {
+                                    label: "Path",
+                                    icon: user.path === "ancient" ? "🌊" : "🌪️",
+                                    value: pathLabel,
+                                    color: world.color,
+                                    locked: true,
+                                },
+                                {
+                                    label: "Goal",
+                                    icon: "🎯",
+                                    value: (user.goal as string) ?? "Strength",
+                                    color: "var(--accent)",
+                                },
+                                {
+                                    label: "Why",
+                                    icon: "💭",
+                                    value: (user.why as string) ?? "Confidence",
+                                    color: "var(--gold)",
+                                },
+                            ].map((c, i) => (
+                                <div
+                                    key={c.label}
+                                    className="relative flex flex-col gap-2 p-4"
+                                    style={{
+                                        borderRight: i % 2 === 0 ? "1px solid var(--border)" : undefined,
+                                        borderBottom: i < 2 ? "1px solid var(--border)" : undefined,
+                                    }}
                                 >
-                                    View Ranks →
-                                </button>
-                            }
-                        >
-                            <div className="grid grid-cols-2 lg:grid-cols-4">
-                                {[
-                                    {
-                                        label: "World",
-                                        icon: world.icon,
-                                        value: world.display,
-                                        color: world.color,
-                                        locked: true,
-                                    },
-                                    {
-                                        label: "Path",
-                                        icon: user.path === "ancient" ? "🌊" : "🌪️",
-                                        value: pathLabel,
-                                        color: world.color,
-                                        locked: true,
-                                    },
-                                    {
-                                        label: "Goal",
-                                        icon: "🎯",
-                                        value: (user.goal as string) ?? "Strength",
-                                        color: "var(--accent)",
-                                    },
-                                    {
-                                        label: "Why",
-                                        icon: "💭",
-                                        value: (user.why as string) ?? "Confidence",
-                                        color: "var(--gold)",
-                                    },
-                                ].map((c, i) => (
-                                    <div
-                                        key={c.label}
-                                        className="relative flex flex-col gap-2 p-4"
-                                        style={{
-                                            borderRight: i % 2 === 0 ? "1px solid var(--border)" : undefined,
-                                            borderBottom: i < 2 ? "1px solid var(--border)" : undefined,
-                                        }}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-[9px] font-body font-bold tracking-[0.2em] uppercase text-muted-foreground/60">
-                                                {c.label}
-                                            </span>
-                                            {c.locked && <span className="text-[10px] opacity-50">🔒</span>}
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[18px]">{c.icon}</span>
-                                            <span
-                                                className="font-display font-bold text-[14px] leading-tight tracking-[-0.01em] capitalize"
-                                                style={{ color: c.color }}
-                                            >
-                                                {c.value}
-                                            </span>
-                                        </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[9px] font-body font-bold tracking-[0.2em] uppercase text-muted-foreground/60">
+                                            {c.label}
+                                        </span>
+                                        {c.locked && <span className="text-[10px] opacity-50">🔒</span>}
                                     </div>
-                                ))}
-                            </div>
-                            <div
-                                className="flex items-center gap-2 px-4 py-3 lg:border-t"
-                                style={{
-                                    background: "color-mix(in srgb, var(--gold) 6%, transparent)",
-                                    borderTop: "1px solid var(--border)",
-                                }}
-                            >
-                                <span className="text-[12px]">⚠️</span>
-                                <span
-                                    className="font-body text-[11px]"
-                                    style={{ color: "color-mix(in srgb, var(--gold) 85%, var(--foreground))" }}
-                                >
-                                    World and Path are permanent. Choose carefully.
-                                </span>
-                            </div>
-                        </Section>
-
-                        {/* ═══════ PREFERENCES ═══════ */}
-                        <Section id="preferences" index={2} title="Preferences">
-                            <Row icon="🌙" label="Dark mode" hint="The void suits you.">
-                                <Toggle label="Dark mode" on={dark} onChange={toggleDark} />
-                            </Row>
-                            <Row icon="🔊" label="Sound effects" hint="Level-up chimes and hit sounds">
-                                <Toggle
-                                    label="Sound effects"
-                                    on={prefs.sound}
-                                    onChange={(v) => setPrefs({ ...prefs, sound: v })}
-                                />
-                            </Row>
-                            <Row icon="📳" label="Haptic feedback" hint="Vibrate on reps and rank-ups">
-                                <Toggle
-                                    label="Haptic feedback"
-                                    on={prefs.haptics}
-                                    onChange={(v) => setPrefs({ ...prefs, haptics: v })}
-                                />
-                            </Row>
-                            <Row icon="🌐" label="Language" last>
-                                <Select
-                                    label="Language"
-                                    value={language}
-                                    onChange={setLanguage}
-                                    options={["English"]}
-                                />
-                            </Row>
-                        </Section>
-
-                        {/* ═══════ NOTIFICATIONS ═══════ */}
-                        <Section
-                            id="notifications"
-                            index={3}
-                            title="Notifications"
-                            kicker={
-                                <span
-                                    className="text-[10px] font-body font-bold tabular-nums"
-                                    style={{ color: "var(--accent)" }}
-                                >
-                                    {Object.values(notif).filter(Boolean).length}/5 on
-                                </span>
-                            }
-                        >
-                            <Row icon="⏰" label="Daily training reminder" hint="Every day at 7:00 AM">
-                                <Toggle
-                                    label="Daily training reminder"
-                                    on={notif.daily}
-                                    onChange={(v) => setNotif({ ...notif, daily: v })}
-                                />
-                            </Row>
-                            <Row
-                                icon="🔥"
-                                label="Streak about to break"
-                                hint={`Warning at 8 PM · protects your ${user.currentStreak ?? 0}-day streak`}
-                                highlight
-                            >
-                                <Toggle
-                                    label="Streak about to break"
-                                    on={notif.streak}
-                                    onChange={(v) => setNotif({ ...notif, streak: v })}
-                                />
-                            </Row>
-                            <Row icon="⚔️" label="Rival challenges">
-                                <Toggle
-                                    label="Rival challenges"
-                                    on={notif.rival}
-                                    onChange={(v) => setNotif({ ...notif, rival: v })}
-                                />
-                            </Row>
-                            <Row icon="💬" label="Squad messages">
-                                <Toggle
-                                    label="Squad messages"
-                                    on={notif.squad}
-                                    onChange={(v) => setNotif({ ...notif, squad: v })}
-                                />
-                            </Row>
-                            <Row
-                                icon="📊"
-                                label="Weekly progress summary"
-                                hint="Sundays · XP, PRs and rank movement"
-                                last
-                            >
-                                <Toggle
-                                    label="Weekly progress summary"
-                                    on={notif.weekly}
-                                    onChange={(v) => setNotif({ ...notif, weekly: v })}
-                                />
-                            </Row>
-                        </Section>
-
-                        {/* ═══════ PRIVACY ═══════ */}
-                        <Section id="privacy" index={4} title="Privacy">
-                            <Row icon="🏆" label="Leaderboard visibility" hint="Who can see your rank and power level">
-                                <Select
-                                    label="Leaderboard visibility"
-                                    value={visibility}
-                                    onChange={setVisibility}
-                                    options={["Public", "Friends", "Private"]}
-                                />
-                            </Row>
-                            <Row icon="📰" label="Show activity feed publicly">
-                                <Toggle
-                                    label="Show activity feed publicly"
-                                    on={privacy.feed}
-                                    onChange={(v) => setPrivacy({ ...privacy, feed: v })}
-                                />
-                            </Row>
-                            <Row icon="🔥" label="Show streak publicly" last>
-                                <Toggle
-                                    label="Show streak publicly"
-                                    on={privacy.streak}
-                                    onChange={(v) => setPrivacy({ ...privacy, streak: v })}
-                                />
-                            </Row>
-                        </Section>
-
-                        {/* ═══════ SESSIONS ═══════ */}
-                        <Section
-                            id="sessions"
-                            index={5}
-                            title="Sessions"
-                            kicker={
-                                <span className="text-[10px] font-body font-bold text-muted-foreground tabular-nums">
-                                    {sessions.length} active
-                                </span>
-                            }
-                        >
-                            {sessions.map((s, i) => (
-                                <Row
-                                    key={s.id}
-                                    icon={s.icon}
-                                    label={s.device}
-                                    hint={`${s.place} · ${s.when}`}
-                                    last={i === sessions.length - 1}
-                                >
-                                    {s.current ? (
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[18px]">{c.icon}</span>
                                         <span
-                                            className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-body font-bold tracking-[0.08em] uppercase"
-                                            style={{
-                                                color: "var(--accent)",
-                                                background: "color-mix(in srgb, var(--accent) 10%, transparent)",
-                                                border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)",
-                                            }}
+                                            className="font-display font-bold text-[14px] leading-tight tracking-[-0.01em] capitalize"
+                                            style={{ color: c.color }}
                                         >
-                                            <span
-                                                className="w-1.5 h-1.5 rounded-full animate-pulse"
-                                                style={{ background: "var(--accent)" }}
-                                            />
-                                            This device
-                                        </span>
-                                    ) : (
-                                        <button
-                                        disabled={revokeId?true:false}
-                                            onClick={() => {handleRevokeOne(s.id)}}
-                                            className={`rounded-lg px-3 py-1.5 text-[11px] font-body font-semibold text-muted-foreground transition-all hover:cursor-pointer hover:text-[var(--destructive)] active:scale-95 `}
-                                            style={{ border: "1px solid var(--border)" }}
-                                        >
-                                            {revokeId === s.id ?'Removing...' :'Revoke'}
-                                        </button>
-                                    )}
-                                </Row>
-                            ))}
-                            <div className="p-3" style={{ borderTop: "1px solid var(--border)" }}>
-                                <button
-                                    onClick={handleAllSessionRevoke }
-                                    className="w-full rounded-xl py-2.5 text-[12px] font-body font-semibold transition-all hover:cursor-pointer active:scale-[0.98] hover:bg-[color-mix(in_srgb,var(--destructive)_10%,transparent)]"
-                                    style={{
-                                        color: "var(--destructive)",
-                                        border: "1px solid color-mix(in srgb, var(--destructive) 45%, transparent)",
-                                    }}
-                                >
-                                    Log out of all devices
-                                </button>
-                            </div>
-                        </Section>
-
-                        {/* ═══════ SECURITY ═══════ */}
-                        <Section id="security" index={6} title="Security">
-                            <Row
-                                icon="🔑"
-                                label="Change password"
-                                hint="Last changed 3 months ago"
-                                onClick={() => router.push("/dojo/password")}
-                            >
-                                <Chevron />
-                            </Row>
-                            <Row icon="🛡️" label="Two-factor authentication">
-                                <span
-                                    className="rounded-full px-2.5 py-1 text-[9px] font-body font-bold tracking-[0.14em] uppercase"
-                                    style={{
-                                        color: "var(--gold)",
-                                        background: "color-mix(in srgb, var(--gold) 10%, transparent)",
-                                        border: "1px solid color-mix(in srgb, var(--gold) 30%, transparent)",
-                                    }}
-                                >
-                                    Coming Soon
-                                </span>
-                            </Row>
-                            <Row
-                                icon="📦"
-                                label="Download my data"
-                                hint="Training logs, XP history and ranks"
-                                onClick={() => {}}
-                                last
-                            >
-                                <Chevron />
-                            </Row>
-                        </Section>
-
-                        {/* ═══════ DANGER ZONE ═══════ */}
-                        <Section id="danger" index={7} title="Danger Zone" tone="danger">
-                            <div className="p-5 flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
-                                <div className="flex items-start gap-3 flex-1">
-                                    <div
-                                        className="w-9 h-9 rounded-[10px] flex items-center justify-center text-[16px] shrink-0"
-                                        style={{
-                                            background: "color-mix(in srgb, var(--destructive) 12%, transparent)",
-                                            border: "1px solid color-mix(in srgb, var(--destructive) 30%, transparent)",
-                                        }}
-                                    >
-                                        ☠️
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <span className="font-display font-bold text-[15px] text-foreground">
-                                            Delete Account
-                                        </span>
-                                        <span className="font-body text-[12px] text-muted-foreground leading-snug">
-                                            This cannot be undone. Your rank, XP, and mastery will be permanently
-                                            deleted.
+                                            {c.value}
                                         </span>
                                     </div>
                                 </div>
-                                {confirmDelete ? (
-                                    <div className="flex gap-2 shrink-0">
-                                        <button
-                                            onClick={() => setConfirmDelete(false)}
-                                            className="flex-1 lg:flex-none rounded-xl px-4 py-2.5 text-[12px] font-body font-semibold text-muted-foreground hover:text-foreground hover:cursor-pointer"
-                                            style={{ border: "1px solid var(--border)" }}
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            className="flex-1 lg:flex-none rounded-xl px-4 py-2.5 text-[12px] font-body font-bold text-white hover:cursor-pointer active:scale-[0.98]"
-                                            style={{
-                                                background: "var(--destructive)",
-                                                boxShadow:
-                                                    "0 0 20px color-mix(in srgb, var(--destructive) 45%, transparent)",
-                                            }}
-                                        >
-                                            Yes, delete forever
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <button
-                                        onClick={() => setConfirmDelete(true)}
-                                        className="shrink-0 rounded-xl px-5 py-2.5 text-[12px] font-body font-semibold transition-all hover:cursor-pointer active:scale-[0.98] hover:bg-[color-mix(in_srgb,var(--destructive)_12%,transparent)]"
+                            ))}
+                        </div>
+                        <div
+                            className="flex items-center gap-2 px-4 py-3 lg:border-t"
+                            style={{
+                                background: "color-mix(in srgb, var(--gold) 6%, transparent)",
+                                borderTop: "1px solid var(--border)",
+                            }}
+                        >
+                            <span className="text-[12px]">⚠️</span>
+                            <span
+                                className="font-body text-[11px]"
+                                style={{ color: "color-mix(in srgb, var(--gold) 85%, var(--foreground))" }}
+                            >
+                                World and Path are permanent. Choose carefully.
+                            </span>
+                        </div>
+                    </Section>
+
+                    {/* ═══════ PREFERENCES ═══════ */}
+                    <Section id="preferences" index={2} title="Preferences">
+                        <Row icon="🌙" label="Dark mode" hint="The void suits you.">
+                            <Toggle
+                                label="Dark mode"
+                                on={draft.preferences.darkMode}
+                                onChange={toggleDark}
+                            />
+                        </Row>
+                        <Row icon="🔊" label="Sound effects" hint="Level-up chimes and hit sounds">
+                            <Toggle
+                                label="Sound effects"
+                                on={draft.preferences.soundEffects}
+                                onChange={(v) => patchDraft("preferences", { soundEffects: v })}
+                            />
+                        </Row>
+                        <Row icon="📳" label="Haptic feedback" hint="Vibrate on reps and rank-ups">
+                            <Toggle
+                                label="Haptic feedback"
+                                on={draft.preferences.hapticFeedback}
+                                onChange={(v) => patchDraft("preferences", { hapticFeedback: v })}
+                            />
+                        </Row>
+                        <Row icon="🌐" label="Language" last>
+                            <Select
+                                label="Language"
+                                value={draft.preferences.language}
+                                onChange={(v) =>
+                                    patchDraft("preferences", {
+                                        language: v as Settings["preferences"]["language"],
+                                    })
+                                }
+                                options={["English"]}
+                            />
+                        </Row>
+                    </Section>
+
+                    {/* ═══════ NOTIFICATIONS ═══════ */}
+                    <Section
+                        id="notifications"
+                        index={3}
+                        title="Notifications"
+                        kicker={
+                            <span
+                                className="text-[10px] font-body font-bold tabular-nums"
+                                style={{ color: "var(--accent)" }}
+                            >
+                                {Object.values(draft.notifications).filter(Boolean).length}/5 on
+                            </span>
+                        }
+                    >
+                        <Row
+                            icon="⏰"
+                            label="Daily training reminder"
+                            hint={
+                                push.state === "blocked"
+                                    ? "Notifications blocked in your browser"
+                                    : "Every day at 7:00 AM"
+                            }
+                        >
+                            <PushToggle
+                                pushState={push.state}
+                                busy={push.busy}
+                                on={draft.notifications.dailyTraining}
+                                label="Daily training reminder"
+                                onChange={(v) => handlePushToggle("dailyTraining", v)}
+                            />
+                        </Row>
+
+                        <Row
+                            icon="🔥"
+                            label="Streak about to break"
+                            hint={
+                                push.state === "blocked"
+                                    ? "Notifications blocked in your browser"
+                                    : `Warning at 8 PM · protects your ${user.currentStreak ?? 0}-day streak`
+                            }
+                            highlight
+                        >
+                            <PushToggle
+                                pushState={push.state}
+                                busy={push.busy}
+                                on={draft.notifications.streakReminder}
+                                label="Streak about to break"
+                                onChange={(v) => handlePushToggle("streakReminder", v)}
+                            />
+                        </Row>
+
+                        <Row icon="⚔️" label="Rival challenges">
+                            <Toggle
+                                label="Rival challenges"
+                                on={draft.notifications.rivalChallenges}
+                                onChange={(v) => patchDraft("notifications", { rivalChallenges: v })}
+                            />
+                        </Row>
+
+                        <Row icon="💬" label="Squad messages">
+                            <Toggle
+                                label="Squad messages"
+                                on={draft.notifications.squadMessages}
+                                onChange={(v) => patchDraft("notifications", { squadMessages: v })}
+                            />
+                        </Row>
+
+                        <Row
+                            icon="📊"
+                            label="Weekly progress summary"
+                            hint="Mondays · XP, power and rank movement"
+                            last
+                        >
+                            <Toggle
+                                label="Weekly progress summary"
+                                on={draft.notifications.weeklyProgress}
+                                onChange={(v) => patchDraft("notifications", { weeklyProgress: v })}
+                            />
+                        </Row>
+                    </Section>
+
+                    {/* ═══════ PRIVACY ═══════ */}
+                    <Section id="privacy" index={4} title="Privacy">
+                        <Row icon="🏆" label="Leaderboard visibility" hint="Who can see your rank and power level">
+                            <Select
+                                label="Leaderboard visibility"
+                                value={draft.privacy.leaderboardVisibility}
+                                onChange={(v) =>
+                                    patchDraft("privacy", {
+                                        leaderboardVisibility: v as Settings["privacy"]["leaderboardVisibility"],
+                                    })
+                                }
+                                options={["Public", "Friends", "Private"]}
+                            />
+                        </Row>
+                        <Row icon="📰" label="Show activity feed publicly">
+                            <Toggle
+                                label="Show activity feed publicly"
+                                on={draft.privacy.activityFeedPublic}
+                                onChange={(v) => patchDraft("privacy", { activityFeedPublic: v })}
+                            />
+                        </Row>
+                        <Row icon="🔥" label="Show streak publicly" last>
+                            <Toggle
+                                label="Show streak publicly"
+                                on={draft.privacy.streakPublic}
+                                onChange={(v) => patchDraft("privacy", { streakPublic: v })}
+                            />
+                        </Row>
+                    </Section>
+
+                    {/* ═══════ SESSIONS ═══════ */}
+                    <Section
+                        id="sessions"
+                        index={5}
+                        title="Sessions"
+                        kicker={
+                            <span className="text-[10px] font-body font-bold text-muted-foreground tabular-nums">
+                                {sessions.length} active
+                            </span>
+                        }
+                    >
+                        {sessions.map((s, i) => (
+                            <Row
+                                key={s.id}
+                                icon={s.icon}
+                                label={s.device}
+                                hint={`${s.place} · ${s.when}`}
+                                last={i === sessions.length - 1}
+                            >
+                                {s.current ? (
+                                    <span
+                                        className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-body font-bold tracking-[0.08em] uppercase"
                                         style={{
-                                            color: "var(--destructive)",
-                                            border: "1px solid color-mix(in srgb, var(--destructive) 55%, transparent)",
+                                            color: "var(--accent)",
+                                            background: "color-mix(in srgb, var(--accent) 10%, transparent)",
+                                            border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)",
                                         }}
                                     >
-                                        Delete Account
+                                        <span
+                                            className="w-1.5 h-1.5 rounded-full animate-pulse"
+                                            style={{ background: "var(--accent)" }}
+                                        />
+                                        This device
+                                    </span>
+                                ) : (
+                                    <button
+                                        disabled={!!revokeId}
+                                        onClick={() => handleRevokeOne(s.id)}
+                                        className="rounded-lg px-3 py-1.5 text-[11px] font-body font-semibold text-muted-foreground transition-all hover:cursor-pointer hover:text-[var(--destructive)] active:scale-95"
+                                        style={{ border: "1px solid var(--border)" }}
+                                    >
+                                        {revokeId === s.id ? "Removing..." : "Revoke"}
                                     </button>
                                 )}
+                            </Row>
+                        ))}
+                        <div className="p-3" style={{ borderTop: "1px solid var(--border)" }}>
+                            <button
+                                onClick={handleAllSessionRevoke}
+                                className="w-full rounded-xl py-2.5 text-[12px] font-body font-semibold transition-all hover:cursor-pointer active:scale-[0.98] hover:bg-[color-mix(in_srgb,var(--destructive)_10%,transparent)]"
+                                style={{
+                                    color: "var(--destructive)",
+                                    border: "1px solid color-mix(in srgb, var(--destructive) 45%, transparent)",
+                                }}
+                            >
+                                Log out of all devices
+                            </button>
+                        </div>
+                    </Section>
+
+                    {/* ═══════ SECURITY ═══════ */}
+                    <Section id="security" index={6} title="Security">
+                        <Row
+                            icon="🔑"
+                            label="Change password"
+                            hint="Last changed 3 months ago"
+                            onClick={() => router.push("/dojo/password")}
+                        >
+                            <Chevron />
+                        </Row>
+                        <Row icon="🛡️" label="Two-factor authentication">
+                            <span
+                                className="rounded-full px-2.5 py-1 text-[9px] font-body font-bold tracking-[0.14em] uppercase"
+                                style={{
+                                    color: "var(--gold)",
+                                    background: "color-mix(in srgb, var(--gold) 10%, transparent)",
+                                    border: "1px solid color-mix(in srgb, var(--gold) 30%, transparent)",
+                                }}
+                            >
+                                Coming Soon
+                            </span>
+                        </Row>
+                        <Row
+                            icon="📦"
+                            label="Download my data"
+                            hint="Training logs, XP history and ranks"
+                            onClick={() => {}}
+                            last
+                        >
+                            <Chevron />
+                        </Row>
+                    </Section>
+
+                    {/* ═══════ DANGER ZONE ═══════ */}
+                    <Section id="danger" index={7} title="Danger Zone" tone="danger">
+                        <div className="p-5 flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
+                            <div className="flex items-start gap-3 flex-1">
+                                <div
+                                    className="w-9 h-9 rounded-[10px] flex items-center justify-center text-[16px] shrink-0"
+                                    style={{
+                                        background: "color-mix(in srgb, var(--destructive) 12%, transparent)",
+                                        border: "1px solid color-mix(in srgb, var(--destructive) 30%, transparent)",
+                                    }}
+                                >
+                                    ☠️
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <span className="font-display font-bold text-[15px] text-foreground">
+                                        Delete Account
+                                    </span>
+                                    <span className="font-body text-[12px] text-muted-foreground leading-snug">
+                                        This cannot be undone. Your rank, XP, and mastery will be permanently deleted.
+                                    </span>
+                                </div>
                             </div>
-                        </Section>
-                    </main>
-                </div>
-            ) : (
-                <div className="flex items-center justify-center min-h-[60vh] text-muted-foreground font-body">
-                    Loading...
-                </div>
-            )}
+                            {confirmDelete ? (
+                                <div className="flex gap-2 shrink-0">
+                                    <button
+                                        onClick={() => setConfirmDelete(false)}
+                                        className="flex-1 lg:flex-none rounded-xl px-4 py-2.5 text-[12px] font-body font-semibold text-muted-foreground hover:text-foreground hover:cursor-pointer"
+                                        style={{ border: "1px solid var(--border)" }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        className="flex-1 lg:flex-none rounded-xl px-4 py-2.5 text-[12px] font-body font-bold text-white hover:cursor-pointer active:scale-[0.98]"
+                                        style={{
+                                            background: "var(--destructive)",
+                                            boxShadow: "0 0 20px color-mix(in srgb, var(--destructive) 45%, transparent)",
+                                        }}
+                                    >
+                                        Yes, delete forever
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setConfirmDelete(true)}
+                                    className="shrink-0 rounded-xl px-5 py-2.5 text-[12px] font-body font-semibold transition-all hover:cursor-pointer active:scale-[0.98] hover:bg-[color-mix(in_srgb,var(--destructive)_12%,transparent)]"
+                                    style={{
+                                        color: "var(--destructive)",
+                                        border: "1px solid color-mix(in srgb, var(--destructive) 55%, transparent)",
+                                    }}
+                                >
+                                    Delete Account
+                                </button>
+                            )}
+                        </div>
+                    </Section>
+                </main>
+            </div>
         </>
+    );
+}
+
+/* =========================================================
+   SAVE / DISCARD BUTTONS
+
+   Dirty = draft differs from original. When clean, buttons
+   fade and disable. When dirty, they light up.
+   ========================================================= */
+function SaveButtons({
+    dirty,
+    saving,
+    onSave,
+    onDiscard,
+    className = "",
+    fullWidth = false,
+}: {
+    dirty: boolean;
+    saving: boolean;
+    onSave: () => void;
+    onDiscard: () => void;
+    className?: string;
+    fullWidth?: boolean;
+}) {
+    return (
+        <div className={`items-center gap-2 ${className} ${fullWidth ? "w-full" : ""}`}>
+            <button
+                onClick={onDiscard}
+                disabled={!dirty || saving}
+                className="rounded-xl px-4 py-2.5 text-[12px] font-body font-semibold transition-all hover:cursor-pointer active:scale-[0.98] disabled:cursor-not-allowed"
+                style={{
+                    color: dirty ? "var(--foreground)" : "var(--muted-foreground)",
+                    background: dirty ? "var(--secondary)" : "transparent",
+                    border: `1px solid ${dirty ? "var(--border)" : "color-mix(in srgb, var(--border) 50%, transparent)"}`,
+                    opacity: dirty ? 1 : 0.4,
+                    flex: fullWidth ? 1 : undefined,
+                }}
+            >
+                Discard
+            </button>
+            <button
+                onClick={onSave}
+                disabled={!dirty || saving}
+                className="rounded-xl px-5 py-2.5 text-[12px] font-body font-bold transition-all hover:cursor-pointer active:scale-[0.98] disabled:cursor-not-allowed"
+                style={{
+                    color: dirty ? "#fff" : "var(--muted-foreground)",
+                    background: dirty
+                        ? "linear-gradient(135deg, var(--primary) 0%, var(--primary) 55%, var(--accent) 140%)"
+                        : "var(--secondary)",
+                    border: `1px solid ${dirty ? "transparent" : "var(--border)"}`,
+                    opacity: dirty ? 1 : 0.4,
+                    boxShadow: dirty
+                        ? "0 0 20px color-mix(in srgb, var(--primary) 40%, transparent)"
+                        : "none",
+                    flex: fullWidth ? 1 : undefined,
+                }}
+            >
+                {saving ? "Saving…" : "Save Changes"}
+            </button>
+        </div>
     );
 }

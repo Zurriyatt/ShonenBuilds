@@ -5,7 +5,7 @@ import { db } from "@/prisma/db";
 import { authToken } from "@/app/api/auth/login/route";
 import { computeUserPower } from "../user/power";
 import { updateStreak } from "../user/streak";
-
+import { Settings,resolveSettings } from "../user/defaultSettings";
 const JWT_SECRET = process.env.JWT_SECRET as string;
 if (!JWT_SECRET) {
     throw new Error("JWT_SECRET is missing from environment variables");
@@ -35,6 +35,7 @@ export interface User {
     milestoneBonus: number;
     streakAdvanced?: boolean;
     createdAt:Date
+    settings : Settings // cant be null, only null if not user then if not user we jsut exit before calling settings
 }
 
 export async function authVerify({
@@ -81,6 +82,8 @@ export async function authVerify({
         }
 
         const { getLevelFromXp, getTierFromLevel } = await import("@/lib/world/MPS");
+        const settingsRow = await db.orm.public.UserSettings.where({userId: Token.userId}).first();
+        const settings = resolveSettings(settingsRow?.settings);
 
         /* ═══════════════════════════════════════════════════════
            FAST PATH — skipStreak = true
@@ -120,7 +123,8 @@ export async function authVerify({
                     milestoneBonus: 0,
                     powerLevel: 0,
                     totalWorkouts: 0,
-                    createdAt : new Date(0).toISOString().substring(11,19)
+                    createdAt : user.createdAt.toString(),
+                    settings : settings
                 },
             };
         }
@@ -166,7 +170,8 @@ export async function authVerify({
                 milestoneHit: streak.milestoneHit,
                 milestoneBonus: streak.milestoneBonus,
                 totalWorkouts: 0,
-                createdAt : user.createdAt
+                createdAt : user.createdAt.toString(),
+                settings : settings
             },
         };
     } catch (err) {
