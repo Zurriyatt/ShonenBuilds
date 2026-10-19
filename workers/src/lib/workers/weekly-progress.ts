@@ -217,7 +217,7 @@ export async function weeklyProgress(req: IncomingMessage, res: ServerResponse) 
         sends.forEach((r, i) => {
             if (r.status === "rejected") {
                 console.error(`[weeklyProgress] send #${i} failed:`, r.reason);
-            }
+            };
         });
 
         console.log(`[weeklyProgress] ${succeeded} sent, ${failed} failed`);
@@ -239,6 +239,6 @@ export async function weeklyProgress(req: IncomingMessage, res: ServerResponse) 
                     error: err instanceof Error ? err.message : "Server error",
                 }),
             );
-        }
-    }
-}
+        };
+    };
+};

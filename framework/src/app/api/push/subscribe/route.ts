@@ -37,12 +37,12 @@ export async function POST(request: NextRequest) {
             .where({ endpoint })
             .first();
 
-        if (existing) {
-            return NextResponse.json(
-                { success: false, error: "Subscription already exists" },
-                { status: 409 },
-            );
-        }
+            if (existing) {
+                return NextResponse.json(
+                    { success: false, error: "Subscription already exists" },
+                    { status: 409 },
+                );
+            }
 
         /* ── 4. Create the subscription row ── */
         await db.orm.public.PushSubscription.create({
