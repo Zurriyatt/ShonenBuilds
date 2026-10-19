@@ -8,9 +8,9 @@ import { resolveSettings } from "../DEFAULT_SETINGS.js";
    These three values prove our identity to FCM/APNs.
    ========================================================= */
 webpush.setVapidDetails(
-    process.env.NEXT_PUBLIC_VAPID_SUBJECT!,
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.NEXT_PUBLIC_VAPID_PRIVATE_KEY!,
+    process.env.VAPID_SUBJECT!,
+    process.env.VAPID_PUBLIC_KEY!,
+    process.env.VAPID_PRIVATE_KEY!,
 );
 
 /* Today in the given timezone as "YYYY-MM-DD" */
