@@ -54,6 +54,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     xp: 25,
                 });
             }
+            document.documentElement.classList.remove("light", "dark");
+
+            // 3. Add the correct theme word to the <html> tag's class
+            document.documentElement.classList.add(data.data.settings.preferences.darkTheme?'dark':'light');
         } catch (err) {
             console.error("User fetch failed:", err);
             setUser(null);
@@ -66,11 +70,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         fetchUser();
     }, [fetchUser]);
 
-    return (
-        <UserContext.Provider value={{ user, loading, refresh: fetchUser }}>
-            {children}
-        </UserContext.Provider>
-    );
+    return <UserContext.Provider value={{ user, loading, refresh: fetchUser }}>{children}</UserContext.Provider>;
 }
 
 export function useUser() {

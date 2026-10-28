@@ -9,6 +9,7 @@ import { DEFAULT_SETTINGS } from "@/lib/user/defaultSettings";
 import { DEFAULT_CIPHERS } from "tls";
 const JWT_SECRET = process.env.JWT_SECRET!;
 const SESSION_DAYS = 30;
+export const saltRoundsP = 10;
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
         }
 
         // 4. Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, saltRoundsP);
 
         // Generate application-level UUID for the user string ID
         // const userId = crypto.randomUUID(); backup if needed after runtime crash

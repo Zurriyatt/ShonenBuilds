@@ -307,10 +307,7 @@ export default function Dojo() {
     const [draft, setDraft] = useState<Settings | null>(null);
     const [saving, setSaving] = useState(false);
 
-    const dirty = useMemo(
-        () => JSON.stringify(original) !== JSON.stringify(draft),
-        [original, draft],
-    );
+    const dirty = useMemo(() => JSON.stringify(original) !== JSON.stringify(draft), [original, draft]);
 
     /* Hydrate from user.settings */
     useEffect(() => {
@@ -330,7 +327,7 @@ export default function Dojo() {
         setSaving(true);
         try {
             const res = await fetch("/api/users/settings", {
-                method: "PATCH",
+                method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(draft),
             });
@@ -347,13 +344,36 @@ export default function Dojo() {
         } finally {
             setSaving(false);
         }
-    };
+    };  
+    const handleDownloadData = () => {
+    if (!user) return;
+
+    // 1. Remove internal/sensitive stuff
+    const { userId, sessionId, ...safeData } = user;
+
+    // 2. Convert to pretty JSON
+    const dataStr = JSON.stringify(safeData, null, 2);
+
+    // 3. Create a Blob (a file-like object in the browser)
+    const blob = new Blob([dataStr], { type: "application/json" });
+
+    // 4. Create a temporary URL for the blob
+    const url = URL.createObjectURL(blob);
+
+    // 5. Create a temporary <a> tag and click it to trigger the download
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `shonenbuilds-${user.username}.json`;
+    document.body.appendChild(a);
+    a.click();
+
+    // 6. Clean up
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};
 
     /* Update a nested field in draft */
-    function patchDraft<K extends keyof Settings>(
-        section: K,
-        patch: Partial<Settings[K]>,
-    ) {
+    function patchDraft<K extends keyof Settings>(section: K, patch: Partial<Settings[K]>) {
         setDraft((prev) => {
             if (!prev) return prev;
             return { ...prev, [section]: { ...prev[section], ...patch } };
@@ -413,7 +433,7 @@ export default function Dojo() {
     const [active, setActive] = useState(SECTIONS[0].id);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [dark, setDark] = useState(true);
-
+    const [delLoading, setDelLoading] = useState<boolean>(false);
     useEffect(() => {
         async function fetchSessions() {
             try {
@@ -451,7 +471,20 @@ export default function Dojo() {
             toast.error(data.error || "Failed");
         }
     }
-
+    async function handleDelete() {
+        setDelLoading(true);
+        const res = await fetch("/api/users/delete", { method: "DELETE" });
+        const jsonMess = await res.json();
+        if (!jsonMess.success) {
+            toast.error("Failed To Delete!");
+            return;
+        }
+        toast.success(jsonMess.message);
+        setDelLoading(false);
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
+    }
     /* Scroll-spy */
     useEffect(() => {
         const io = new IntersectionObserver(
@@ -473,7 +506,7 @@ export default function Dojo() {
 
     const pathLabel =
         user?.path === "ancient" ? "Ancient Clan" : user?.path === "shinobi" ? "Shinobi" : (user?.path as string);
-    const memberSince = user?.createdAt
+    const memberSince = user?.createdAt 
         ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })
         : "—";
 
@@ -754,11 +787,7 @@ export default function Dojo() {
                     {/* ═══════ PREFERENCES ═══════ */}
                     <Section id="preferences" index={2} title="Preferences">
                         <Row icon="🌙" label="Dark mode" hint="The void suits you.">
-                            <Toggle
-                                label="Dark mode"
-                                on={draft.preferences.darkMode}
-                                onChange={toggleDark}
-                            />
+                            <Toggle label="Dark mode" on={draft.preferences.darkMode} onChange={toggleDark} />
                         </Row>
                         <Row icon="🔊" label="Sound effects" hint="Level-up chimes and hit sounds">
                             <Toggle
@@ -985,7 +1014,7 @@ export default function Dojo() {
                             icon="📦"
                             label="Download my data"
                             hint="Training logs, XP history and ranks"
-                            onClick={() => {}}
+                            onClick={handleDownloadData}
                             last
                         >
                             <Chevron />
@@ -1024,13 +1053,21 @@ export default function Dojo() {
                                         Cancel
                                     </button>
                                     <button
-                                        className="flex-1 lg:flex-none rounded-xl px-4 py-2.5 text-[12px] font-body font-bold text-white hover:cursor-pointer active:scale-[0.98]"
+                                        className="flex-1 lg:flex-none flex rounded-xl px-4 py-2.5 text-[12px] items-center justify-center font-body font-bold text-white hover:cursor-pointer active:scale-[0.98]"
+                                        onClick={handleDelete}
                                         style={{
                                             background: "var(--destructive)",
-                                            boxShadow: "0 0 20px color-mix(in srgb, var(--destructive) 45%, transparent)",
+                                            boxShadow:
+                                                "0 0 20px color-mix(in srgb, var(--destructive) 45%, transparent)",
                                         }}
                                     >
                                         Yes, delete forever
+                                        {delLoading && (
+                                            <div className="relative w-4 h-4 animate-spin ml-2 ">
+                                                <div className="absolute inset-0 rounded-full border-2 border-destructive"></div>
+                                                <div className="absolute inset-0 rounded-full border-2 border-white border-t-transparent border-r-transparent animate-pulse "></div>
+                                            </div>
+                                        )}
                                     </button>
                                 </div>
                             ) : (
@@ -1101,9 +1138,7 @@ function SaveButtons({
                         : "var(--secondary)",
                     border: `1px solid ${dirty ? "transparent" : "var(--border)"}`,
                     opacity: dirty ? 1 : 0.4,
-                    boxShadow: dirty
-                        ? "0 0 20px color-mix(in srgb, var(--primary) 40%, transparent)"
-                        : "none",
+                    boxShadow: dirty ? "0 0 20px color-mix(in srgb, var(--primary) 40%, transparent)" : "none",
                     flex: fullWidth ? 1 : undefined,
                 }}
             >

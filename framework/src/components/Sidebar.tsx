@@ -336,7 +336,7 @@ export function SideBar({
                                     >
                                         <span className="text-[12px]">🔥</span>
                                         <span className="text-[10px] font-body font-bold" style={{ color: "var(--gold)" }}>
-                                            9d
+                                            {USER_DATA?.currentStreak||1}d
                                         </span>
                                     </div>
                                     <div
@@ -448,6 +448,9 @@ export function SideBar({
                                 const dataa = await data.json();
                                 if(dataa.success){
                                     toast.success('Logout Successful!');
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 1000);
                                 }else{
                                     toast.error('Logout Failed!')
                                 }

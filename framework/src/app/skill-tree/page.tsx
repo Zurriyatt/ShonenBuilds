@@ -5,6 +5,7 @@ import type { Positioned } from "@/lib/skills/layout";
 import type { Skill } from "@/lib/skills/skills";
 import { useUser } from "@/lib/auth/UserProvider";
 import { stateFor } from "@/lib/user/helpers";
+import Image from "next/image";
 import { showXpToast, showMasteryToast, showLevelUpToast, showTierUpToast } from "@/lib/toast";
 import { getRankName, getXpForLevel, getWorld } from "@/lib/world/MPS";
 
@@ -26,7 +27,49 @@ type SkillState = "locked" | "available" | "unlocked" | "in_progress" | "mastere
    · in_progress → cyan accent (active)
    · mastered    → violet glory (done)
    ═════════════════════════════════════════════════════════ */
+/* ═════════════════════════════════════════════════════════
+   LEGEND
+   ═════════════════════════════════════════════════════════ */
+function SkillTreeLegend() {
+    const items = [
+        { label: "Mastered", color: "var(--primary)" },
+        { label: "In Progress", color: "var(--accent)" },
+        { label: "Unlocked", color: "var(--gold)" },
+        { label: "Available", color: "color-mix(in srgb, var(--foreground) 22%, var(--border))" },
+        { label: "Locked", color: "var(--border)" },
+    ];
 
+    return (
+        <div 
+            className="fixed bottom-6 left-6 z-30 flex flex-col gap-2.5 rounded-2xl p-4"
+            style={{
+                background: "color-mix(in srgb, var(--card) 85%, transparent)",
+                backdropFilter: "blur(16px)",
+                border: "1px solid var(--border)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+            }}
+        >
+            <span className="text-[10px] font-body font-bold tracking-[0.2em] uppercase text-muted-foreground mb-1">
+                Node States
+            </span>
+            {items.map((item) => (
+                <div key={item.label} className="flex items-center gap-3">
+                    <div
+                        className="w-3 h-3 rounded-full shrink-0"
+                        style={{
+                            background: item.color,
+                            boxShadow: `0 0 10px ${item.color}`,
+                            border: "1px solid rgba(255,255,255,0.1)"
+                        }}
+                    />
+                    <span className="text-[12px] font-body text-foreground/80 leading-none">
+                        {item.label}
+                    </span>
+                </div>
+            ))}
+        </div>
+    );
+}
 const STATE_COLORS: Record<SkillState, {
     border: string;
     bg: string;
@@ -46,13 +89,13 @@ const STATE_COLORS: Record<SkillState, {
         label:  "Available",
     },
     unlocked: {
-        border: "color-mix(in srgb, var(--gold) 45%, transparent)",
+        border: "color-mix(in srgb, var(--gold) 85%, transparent)",
         bg:     "color-mix(in srgb, var(--gold) 8%, var(--card))",
         name:   "var(--foreground)",
         label:  "Unlocked",
     },
     in_progress: {
-        border: "color-mix(in srgb, var(--accent) 60%, transparent)",
+        border: "color-mix(in srgb, var(--accent) 100%, transparent)",
         bg:     "color-mix(in srgb, var(--accent) 10%, var(--card))",
         name:   "var(--accent)",
         label:  "In Progress",
@@ -89,11 +132,11 @@ function SkillNode({ skill, state, onClick }: { skill: Skill; state: SkillState;
     return (
         <button
             onClick={onClick}
-            className="w-16 h-16 rounded-full border-2 overflow-hidden flex items-center justify-center transition-all cursor-pointer hover:scale-110"
-            style={{ borderColor: colors.border, background: colors.bg }}
+            className="w-16 h-16 rounded-full border-4 overflow-hidden flex items-center justify-center transition-all cursor-pointer hover:scale-110"
+            style={{ borderColor: colors.border, background: '#09080F' }}
         >
             {hasIcon ? (
-                <img src={skill.icon as string} alt={skill.name} className="w-full h-full object-cover scale-[1.25]" />
+                <Image width={100} height={100} src={skill.icon as string} alt={skill.name} className="w-full h-full object-cover scale-[1.25]" />
             ) : (
                 <span style={{ color: "var(--muted-foreground)", opacity: 0.5 }}>
                     <PlaceholderIcon />
@@ -583,7 +626,7 @@ export default function SkillTreePage() {
                     </button>
                 </div>
             </div>
-
+            <SkillTreeLegend/>
             <SkillBottomSheet
                 skill={selectedSkill}
                 state={selectedSkill ? stateForSkillTree(selectedSkill) : "locked"}
