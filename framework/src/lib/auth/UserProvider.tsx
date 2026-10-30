@@ -57,7 +57,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             document.documentElement.classList.remove("light", "dark");
 
             // 3. Add the correct theme word to the <html> tag's class
-            document.documentElement.classList.add(data.data.settings.preferences.darkTheme?'dark':'light');
+
+            document.documentElement.classList.add(data.data.settings.preferences.darkMode?'dark':'light');
         } catch (err) {
             console.error("User fetch failed:", err);
             setUser(null);
