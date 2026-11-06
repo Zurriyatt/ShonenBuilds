@@ -6,6 +6,7 @@ model User {
   email     String        @unique
   name      String
   password  String
+  avatar    String
   world     String
   path      String
   goal      String

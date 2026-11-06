@@ -439,7 +439,7 @@ export function SideBar({
                         style={{ borderTop: "1px solid color-mix(in srgb, var(--border) 55%, transparent)" }}
                     >
                         <p className="text-[10px] text-muted-foreground font-body mb-2 tracking-[0.08em]">
-                            v0.50.0 · ShonenBuilds
+                            v0.70.00 · ShonenBuilds
                         </p>
                         {loggedIn && (
                             <button

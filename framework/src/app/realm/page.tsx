@@ -16,9 +16,30 @@ import { useRouter } from "next/navigation";
    STATIC DATA (placeholders until real activity tracking exists)
    ========================================================= */
 const ACTIVITY = [
-    { icon: "💪", label: "Push Day Complete", detail: "32 reps · max effort", xp: "+450 XP", time: "2h ago", color: "var(--primary)" },
-    { icon: "🏃", label: "Morning Run · 5km", detail: "28:14 · Zone 3", xp: "+280 XP", time: "Yesterday", color: "var(--accent)" },
-    { icon: "⚔️", label: "Rival Challenge Won", detail: "vs @kira_apex", xp: "+620 XP", time: "2d ago", color: "var(--gold)" },
+    {
+        icon: "💪",
+        label: "Push Day Complete",
+        detail: "32 reps · max effort",
+        xp: "+450 XP",
+        time: "2h ago",
+        color: "var(--primary)",
+    },
+    {
+        icon: "🏃",
+        label: "Morning Run · 5km",
+        detail: "28:14 · Zone 3",
+        xp: "+280 XP",
+        time: "Yesterday",
+        color: "var(--accent)",
+    },
+    {
+        icon: "⚔️",
+        label: "Rival Challenge Won",
+        detail: "vs @kira_apex",
+        xp: "+620 XP",
+        time: "2d ago",
+        color: "var(--gold)",
+    },
 ];
 
 const MINI_STATS = [
@@ -39,7 +60,7 @@ const MINI_STATS = [
 export default function Realm() {
     const router = useRouter();
     const USER_DATA = useUser();
-
+    const user = USER_DATA.user;
     const world = getWorld(USER_DATA.user?.world as string);
 
     const rank = getRankName(
@@ -90,7 +111,13 @@ export default function Realm() {
                     className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors active:scale-95"
                 >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path d="M10 3L5 8l5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        <path
+                            d="M10 3L5 8l5 5"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
                     </svg>
                     <span className="text-[12px] font-body">Back</span>
                 </button>
@@ -118,9 +145,7 @@ export default function Realm() {
                     {/* ═════════════ LEFT COLUMN — STATUS WINDOW ═════════════ */}
                     <aside className="flex flex-col lg:col-span-5 xl:col-span-4 lg:sticky lg:top-[76px] lg:gap-4">
                         {/* ═══════ 1. PLAYER CARD + POWER LEVEL ═══════ */}
-                        <div
-                            className="relative overflow-hidden px-3 pt-7 pb-6 flex flex-col gap-4 items-center lg:rounded-3xl lg:px-6 lg:pt-8 lg:pb-8 lg:border lg:border-[var(--border)] lg:bg-[color-mix(in_srgb,var(--card)_60%,transparent)]"
-                        >
+                        <div className="relative overflow-hidden px-3 pt-7 pb-6 flex flex-col gap-4 items-center lg:rounded-3xl lg:px-6 lg:pt-8 lg:pb-8 lg:border lg:border-[var(--border)] lg:bg-[color-mix(in_srgb,var(--card)_60%,transparent)]">
                             <div
                                 className="pointer-events-none absolute inset-0"
                                 style={{
@@ -129,10 +154,22 @@ export default function Realm() {
                             />
                             {/* Desktop-only HUD corner brackets */}
                             <div className="hidden lg:block pointer-events-none absolute inset-3">
-                                <span className="absolute top-0 left-0 w-4 h-4 border-t border-l" style={{ borderColor: world.border }} />
-                                <span className="absolute top-0 right-0 w-4 h-4 border-t border-r" style={{ borderColor: world.border }} />
-                                <span className="absolute bottom-0 left-0 w-4 h-4 border-b border-l" style={{ borderColor: world.border }} />
-                                <span className="absolute bottom-0 right-0 w-4 h-4 border-b border-r" style={{ borderColor: world.border }} />
+                                <span
+                                    className="absolute top-0 left-0 w-4 h-4 border-t border-l"
+                                    style={{ borderColor: world.border }}
+                                />
+                                <span
+                                    className="absolute top-0 right-0 w-4 h-4 border-t border-r"
+                                    style={{ borderColor: world.border }}
+                                />
+                                <span
+                                    className="absolute bottom-0 left-0 w-4 h-4 border-b border-l"
+                                    style={{ borderColor: world.border }}
+                                />
+                                <span
+                                    className="absolute bottom-0 right-0 w-4 h-4 border-b border-r"
+                                    style={{ borderColor: world.border }}
+                                />
                             </div>
 
                             <div className="flex flex-col items-center gap-4 relative z-10 w-full max-w-md mx-auto">
@@ -153,7 +190,15 @@ export default function Realm() {
                                                 border: "1px solid var(--border)",
                                             }}
                                         >
-                                            {world.icon}
+                                            {user?.avatar != "" && user?.avatar != undefined ? (
+                                                <img
+                                                    src={user.avatar}
+                                                    alt="Preview"
+                                                    className="w-full h-full object-cover rounded-[50%]"
+                                                />
+                                            ) : (
+                                                <span>{world.icon}</span>
+                                            )}
                                         </div>
                                         <div
                                             className="absolute bottom-[3px] right-[3px] w-3.5 h-3.5 rounded-full border-2"
@@ -199,7 +244,6 @@ export default function Realm() {
                                             boxShadow: `0 0 24px ${world.glow}, inset 0 0 12px ${world.glow}`,
                                         }}
                                     >
-                                        <span className="text-[14px]">{world.icon}</span>
                                         <span
                                             className="font-display font-bold text-[13px] tracking-[0.1em] uppercase"
                                             style={{ color: world.color }}
@@ -267,7 +311,10 @@ export default function Realm() {
                                     className="inline-flex items-center gap-1.5 text-[11px] font-body font-medium mt-2 tracking-[0.02em]"
                                     style={{ color: "var(--accent)" }}
                                 >
-                                    <span className="inline-block w-[2px] h-3 rounded-full" style={{ background: "var(--accent)" }} />
+                                    <span
+                                        className="inline-block w-[2px] h-3 rounded-full"
+                                        style={{ background: "var(--accent)" }}
+                                    />
                                     +{(USER_DATA.user.todayPower ?? 0).toLocaleString()} today
                                 </span>
                             </div>
@@ -293,12 +340,16 @@ export default function Realm() {
                                             LEVEL {USER_DATA.user.level + 1}
                                         </span>
                                     </div>
-                                    <div className="relative h-2.5 rounded-full overflow-hidden" style={{ background: "var(--secondary)" }}>
+                                    <div
+                                        className="relative h-2.5 rounded-full overflow-hidden"
+                                        style={{ background: "var(--secondary)" }}
+                                    >
                                         <div
                                             className="absolute inset-y-0 left-0 rounded-full transition-all duration-[1400ms] ease-out"
                                             style={{
                                                 width: `${Math.min(100, (USER_DATA.user.xp / requiredXp) * 100)}%`,
-                                                background: "linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%)",
+                                                background:
+                                                    "linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%)",
                                                 boxShadow:
                                                     "0 0 10px color-mix(in srgb, var(--primary) 60%, transparent), 0 0 20px color-mix(in srgb, var(--accent) 25%, transparent), inset 0 1px 0 rgba(255,255,255,0.15)",
                                             }}
@@ -306,7 +357,8 @@ export default function Realm() {
                                             <div
                                                 className="absolute inset-0 w-1/3 pointer-events-none"
                                                 style={{
-                                                    background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.28),transparent)",
+                                                    background:
+                                                        "linear-gradient(90deg,transparent,rgba(255,255,255,0.28),transparent)",
                                                     animation: "glow-slide 2s ease 1.6s both",
                                                 }}
                                             />
@@ -332,7 +384,10 @@ export default function Realm() {
                                             {nextRank}
                                         </span>
                                     </div>
-                                    <div className="relative h-1 rounded-full overflow-hidden" style={{ background: "var(--secondary)" }}>
+                                    <div
+                                        className="relative h-1 rounded-full overflow-hidden"
+                                        style={{ background: "var(--secondary)" }}
+                                    >
                                         <div
                                             className="absolute inset-y-0 left-0 rounded-full"
                                             style={{
@@ -343,7 +398,8 @@ export default function Realm() {
                                         />
                                     </div>
                                     <p className="text-[10px] text-muted-foreground font-body">
-                                        {Math.round(tierProgress * 100)}% through {rank} · {nextRequiedXp.toLocaleString()} XP for promotion
+                                        {Math.round(tierProgress * 100)}% through {rank} ·{" "}
+                                        {nextRequiedXp.toLocaleString()} XP for promotion
                                     </p>
                                 </div>
                             </div>
@@ -372,12 +428,16 @@ export default function Realm() {
                                     background:
                                         "linear-gradient(180deg, color-mix(in srgb, var(--primary) 12%, transparent) 0%, color-mix(in srgb, var(--card) 98%, transparent) 60%)",
                                     border: "1px solid color-mix(in srgb, var(--primary) 25%, transparent)",
-                                    boxShadow: "0 0 0 1px color-mix(in srgb, var(--primary) 5%, transparent), inset 0 1px 0 rgba(255,255,255,0.03)",
+                                    boxShadow:
+                                        "0 0 0 1px color-mix(in srgb, var(--primary) 5%, transparent), inset 0 1px 0 rgba(255,255,255,0.03)",
                                 }}
                             >
                                 <div
                                     className="absolute top-0 left-1 right-1 h-[1.5px]"
-                                    style={{ background: "linear-gradient(90deg, var(--primary), var(--accent))", borderRadius: 9999 }}
+                                    style={{
+                                        background: "linear-gradient(90deg, var(--primary), var(--accent))",
+                                        borderRadius: 9999,
+                                    }}
                                 />
                                 {/* Desktop: content left, CTA block right */}
                                 <div className="p-5 lg:p-8 lg:flex lg:items-end lg:justify-between lg:gap-10">
@@ -403,10 +463,15 @@ export default function Realm() {
                                                 <div
                                                     key={m.label}
                                                     className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5"
-                                                    style={{ background: "var(--secondary)", border: "1px solid var(--border)" }}
+                                                    style={{
+                                                        background: "var(--secondary)",
+                                                        border: "1px solid var(--border)",
+                                                    }}
                                                 >
                                                     <span className="text-[12px]">{m.icon}</span>
-                                                    <span className="text-[11px] font-body font-medium text-foreground/70">{m.label}</span>
+                                                    <span className="text-[11px] font-body font-medium text-foreground/70">
+                                                        {m.label}
+                                                    </span>
                                                 </div>
                                             ))}
                                         </div>
@@ -417,14 +482,17 @@ export default function Realm() {
                                         }}
                                         className="w-full lg:w-[240px] lg:shrink-0 rounded-xl py-3.5 lg:py-4 font-display font-bold text-[15px] lg:text-[16px] tracking-[-0.01em] text-primary-foreground relative overflow-hidden active:scale-[0.98] transition-transform hover:cursor-pointer"
                                         style={{
-                                            background: "linear-gradient(135deg, var(--primary) 0%, var(--primary) 55%, var(--accent) 140%)",
-                                            boxShadow: "0 0 28px color-mix(in srgb, var(--primary) 45%, transparent), 0 4px 20px rgba(0,0,0,0.4)",
+                                            background:
+                                                "linear-gradient(135deg, var(--primary) 0%, var(--primary) 55%, var(--accent) 140%)",
+                                            boxShadow:
+                                                "0 0 28px color-mix(in srgb, var(--primary) 45%, transparent), 0 4px 20px rgba(0,0,0,0.4)",
                                         }}
                                     >
                                         <div
                                             className="absolute inset-y-0 -left-full w-1/2"
                                             style={{
-                                                background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.13),transparent)",
+                                                background:
+                                                    "linear-gradient(90deg,transparent,rgba(255,255,255,0.13),transparent)",
                                                 animation: "card-shimmer 3s ease-in-out infinite",
                                             }}
                                         />
@@ -471,11 +539,18 @@ export default function Realm() {
                                             <span className="font-body font-semibold text-[13px] lg:text-[14px] text-foreground leading-tight truncate lg:w-[220px] lg:shrink-0">
                                                 {a.label}
                                             </span>
-                                            <span className="font-body text-[11px] lg:text-[12px] text-muted-foreground truncate">{a.detail}</span>
+                                            <span className="font-body text-[11px] lg:text-[12px] text-muted-foreground truncate">
+                                                {a.detail}
+                                            </span>
                                         </div>
                                         <div className="flex flex-col lg:flex-row lg:items-center lg:gap-6 items-end gap-0.5 shrink-0">
-                                            <span className="font-body text-[10px] lg:text-[11px] text-muted-foreground/60 lg:order-1 order-2">{a.time}</span>
-                                            <span className="font-display font-bold text-[12px] lg:text-[13px] lg:w-[72px] lg:text-right lg:order-2 order-1" style={{ color: a.color }}>
+                                            <span className="font-body text-[10px] lg:text-[11px] text-muted-foreground/60 lg:order-1 order-2">
+                                                {a.time}
+                                            </span>
+                                            <span
+                                                className="font-display font-bold text-[12px] lg:text-[13px] lg:w-[72px] lg:text-right lg:order-2 order-1"
+                                                style={{ color: a.color }}
+                                            >
                                                 {a.xp}
                                             </span>
                                         </div>
@@ -555,9 +630,17 @@ export default function Realm() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <span className="hidden lg:inline text-[12px] font-body font-semibold text-primary">Accept</span>
+                                    <span className="hidden lg:inline text-[12px] font-body font-semibold text-primary">
+                                        Accept
+                                    </span>
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                        <path d="M6 3l5 5-5 5" stroke="var(--primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path
+                                            d="M6 3l5 5-5 5"
+                                            stroke="var(--primary)"
+                                            strokeWidth="1.8"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
                                     </svg>
                                 </div>
                             </button>

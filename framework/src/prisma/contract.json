@@ -289,6 +289,13 @@
           },
           "User": {
             "fields": {
+              "avatar": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -480,6 +487,9 @@
             },
             "storage": {
               "fields": {
+                "avatar": {
+                  "column": "avatar"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -1767,6 +1777,11 @@
             },
             "users": {
               "columns": {
+                "avatar": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "dataType": "pg/timestamptz",
@@ -1853,7 +1868,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "2bd166176d17be3385d41a57609cd994606f92503248f71d32c6fa89794728fb"
+    "storageHash": "44d1dbfe3a29d8d31825543fa0450aa94ccd1460039bed5e150c94a31eafbc60"
   },
   "execution": {
     "executionHash": "3761e5019eb90b20d48f119939b8ba9d010008a40e1df177454aab538c629649",

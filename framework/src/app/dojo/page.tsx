@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { usePushNotifications, getUnblockUrl } from "@/lib/push/usePushNotifications";
 import type { Settings } from "@/lib/user/defaultSettings";
-
+import { User } from "@/lib/auth/verify";
+import { Temporal } from "temporal-polyfill";
 /*
  * LAYOUT
  * Mobile (< lg): single column — header → profile → sections stacked.
@@ -301,7 +302,10 @@ export default function Dojo() {
     const user = USER_DATA.user;
     const world = getWorld(user?.world as string);
     const push = usePushNotifications();
-
+    const profileData = {
+        world,
+        user
+    }
     /* ── Dirty-state: original vs draft ── */
     const [original, setOriginal] = useState<Settings | null>(null);
     const [draft, setDraft] = useState<Settings | null>(null);
@@ -518,60 +522,6 @@ export default function Dojo() {
             </div>
         );
     }
-
-    const profileCard = (
-        <div
-            className="relative overflow-hidden rounded-[20px] p-5"
-            style={{
-                background: `linear-gradient(160deg, color-mix(in srgb, ${world.color} 10%, var(--card)) 0%, var(--card) 65%)`,
-                border: `1px solid ${world.border}`,
-                boxShadow: `0 0 32px -8px ${world.glow}`,
-            }}
-        >
-            <div
-                className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full blur-3xl"
-                style={{ background: world.glow, opacity: 0.6 }}
-            />
-            <div className="relative flex items-center gap-4">
-                <div className="relative shrink-0" style={{ width: 68, height: 68 }}>
-                    <div
-                        className="absolute inset-[-3px] rounded-full"
-                        style={{
-                            background: `conic-gradient(${world.color} 0deg, var(--accent) 180deg, ${world.color} 360deg)`,
-                            filter: `drop-shadow(0 0 10px ${world.glow})`,
-                            animation: "orbit-spin 12s linear infinite",
-                        }}
-                    />
-                    <div
-                        className="absolute inset-[2px] rounded-full flex items-center justify-center text-[30px]"
-                        style={{ background: "linear-gradient(145deg, var(--secondary), var(--card))" }}
-                    >
-                        {world.icon}
-                    </div>
-                </div>
-                <div className="flex flex-col gap-1 min-w-0">
-                    <span className="font-display font-bold text-[19px] leading-none tracking-[-0.02em] text-foreground truncate">
-                        @{user.username}
-                    </span>
-                    <span className="font-body text-[12px] text-muted-foreground truncate">{user.email}</span>
-                    <span className="text-[9px] font-body font-bold tracking-[0.2em] uppercase text-muted-foreground/60 mt-0.5">
-                        Member since {memberSince}
-                    </span>
-                </div>
-            </div>
-            <button
-                className="relative mt-4 w-full rounded-xl py-2.5 text-[12px] font-body font-semibold transition-all active:scale-[0.98] hover:cursor-pointer hover:brightness-125"
-                style={{
-                    color: world.color,
-                    background: `color-mix(in srgb, ${world.color} 10%, transparent)`,
-                    border: `1px solid ${world.border}`,
-                }}
-            >
-                Change Avatar
-            </button>
-        </div>
-    );
-
     return (
         <>
             {/* ── Sticky header ── */}
@@ -608,7 +558,7 @@ export default function Dojo() {
             <div className="flex flex-col lg:grid lg:grid-cols-12 lg:gap-10 lg:max-w-[1280px] lg:mx-auto lg:w-full lg:px-8 lg:py-8 lg:items-start">
                 {/* ═════════════ SIDEBAR ═════════════ */}
                 <aside className="hidden lg:flex lg:col-span-4 xl:col-span-3 flex-col gap-5 sticky top-[76px]">
-                    {profileCard}
+                    { profileCard(profileData) }
                     <nav
                         className="flex flex-col gap-0.5 rounded-[18px] p-2"
                         style={{ background: "var(--card)", border: "1px solid var(--border)" }}
@@ -696,7 +646,7 @@ export default function Dojo() {
                         />
                     </div>
 
-                    <div className="lg:hidden">{profileCard}</div>
+                    <div className="lg:hidden">{profileCard(profileData)}</div>
 
                     {/* ═══════ CHARACTER ═══════ */}
                     <Section
@@ -1146,4 +1096,67 @@ function SaveButtons({
             </button>
         </div>
     );
+}
+
+export function profileCard({world,user}: {world: any,user:User | null}) {
+        const date = user?.createdAt;
+let memberSince = date 
+  ? new Date(date).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  : '';
+
+    
+    return <>
+
+        <div
+            className="relative overflow-hidden rounded-[20px] p-5"
+            style={{
+                background: `linear-gradient(160deg, color-mix(in srgb, ${world.color} 10%, var(--card)) 0%, var(--card) 65%)`,
+                border: `1px solid ${world.border}`,
+                boxShadow: `0 0 32px -8px ${world.glow}`,
+            }}
+        >
+            <div
+                className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full blur-3xl"
+                style={{ background: world.glow, opacity: 0.6 }}
+            />
+            <div className="relative flex items-center gap-4">
+                <div className="relative shrink-0" style={{ width: 68, height: 68 }}>
+                    <div
+                        className="absolute inset-[-3px] rounded-full"
+                        style={{
+                            background: `conic-gradient(${world.color} 0deg, var(--accent) 180deg, ${world.color} 360deg)`,
+                            filter: `drop-shadow(0 0 10px ${world.glow})`,
+                            animation: "orbit-spin 12s linear infinite",
+                        }}
+                    />
+                    <div
+                        className="absolute inset-[2px] rounded-full flex items-center justify-center text-[30px]"
+                        style={{ background: "linear-gradient(145deg, var(--secondary), var(--card))" }}
+                    >
+                        {user?.avatar != '' &&user?.avatar!= undefined ?<img src={user.avatar} alt="Preview" className="w-full h-full object-cover rounded-[50%]" />:world.icon } 
+                    </div>
+                </div>
+                <div className="flex flex-col gap-1 min-w-0">
+                    <span className="font-display font-bold text-[19px] leading-none tracking-[-0.02em] text-foreground truncate">
+                        @{user?.username}
+                    </span>
+                    <span className="font-body text-[12px] text-muted-foreground truncate">{user?.email}</span>
+                    <span className="text-[9px] font-body font-bold tracking-[0.2em] uppercase text-muted-foreground/60 mt-0.5">
+                        Member since {memberSince? memberSince : "Creation Date"}
+                    </span>
+                </div>
+            </div>
+            <button
+                className="relative mt-4 w-full rounded-xl py-2.5 text-[12px] font-body font-semibold transition-all active:scale-[0.98] hover:cursor-pointer hover:brightness-125"
+                style={{
+                    color: world.color,
+                    background: `color-mix(in srgb, ${world.color} 10%, transparent)`,
+                    border: `1px solid ${world.border}`,
+                }}
+            >
+                Change Avatar
+            </button>
+        </div>
+
+    </>
 }

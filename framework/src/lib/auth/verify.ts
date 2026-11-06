@@ -35,7 +35,8 @@ export interface User {
     milestoneBonus: number;
     streakAdvanced?: boolean;
     createdAt:Date
-    settings : Settings // cant be null, only null if not user then if not user we jsut exit before calling settings
+    settings : Settings; // cant be null, only null if not user then if not user we jsut exit before calling settings
+    avatar:  string;
 }
 
 export async function authVerify({
@@ -124,7 +125,8 @@ export async function authVerify({
                     powerLevel: 0,
                     totalWorkouts: 0,
                     createdAt : user.createdAt.toString(),
-                    settings : settings
+                    settings : settings,
+                    avatar : user.avatar
                 },
             };
         }
@@ -171,7 +173,9 @@ export async function authVerify({
                 milestoneBonus: streak.milestoneBonus,
                 totalWorkouts: 0,
                 createdAt : user.createdAt.toString(),
-                settings : settings
+                settings : settings,
+                avatar : user.avatar ?? null
+
             },
         };
     } catch (err) {

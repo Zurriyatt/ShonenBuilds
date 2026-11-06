@@ -6,7 +6,7 @@ import { authVerify } from "@/lib/auth/verify";
 export async function GET(request: NextRequest) {
     try {
         const result = await authVerify({ req: request,skipStreak:false });
-      console.log(result)
+        console.log(result)
         if (result.success) {
             return NextResponse.json({ success: true, data: result.data });
         }

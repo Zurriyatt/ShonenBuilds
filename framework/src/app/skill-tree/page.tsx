@@ -41,7 +41,7 @@ function SkillTreeLegend() {
 
     return (
         <div 
-            className="fixed bottom-6 left-6 z-30 flex flex-col gap-2.5 rounded-2xl p-4"
+            className="fixed bottom-6 left-6 z-20 flex flex-col gap-2.5 rounded-2xl p-4"
             style={{
                 background: "color-mix(in srgb, var(--card) 85%, transparent)",
                 backdropFilter: "blur(16px)",

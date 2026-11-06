@@ -7,7 +7,7 @@ import { useUser } from "@/lib/auth/UserProvider";
 import toast from "react-hot-toast";
 /* =========================================================
    TYPES
-   ========================================================= */
+   ================================`========================= */
 type Screen = "onboarding" | "login";
 type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 interface FormData {
@@ -19,6 +19,7 @@ interface FormData {
     username: string;
     email: string;
     password: string;
+    avatar: File | null;
 }
 /* =========================================================
    STATIC DATA
@@ -811,10 +812,12 @@ function StepIdentityCredentials({
     data,
     setData,
     onNext,
+    user
 }: {
     data: FormData;
     setData: (d: Partial<FormData>) => void;
     onNext: () => void;
+    user:any
 }) {
     const [showPwd, setShowPwd] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -836,29 +839,43 @@ function StepIdentityCredentials({
         setError(null);
 
         try {
-            const fingerprint = await getFingerprint();
+    const fingerprint = await getFingerprint();
+    const formData = new FormData();
 
-            const res = await fetch("/api/auth/signup", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...data, fingerprint }),
-            });
-
-            const json = await res.json();
-
-            if (!json.success) {
-                toast.error('SignUp Failed');
-                setError(json.error || "Signup failed");
-                setLoading(false);
-                return;
-            }
-            toast.success("Account Created✅");
-            onNext(); 
-        } catch (err) {
-            console.error("Signup error:", err);
-            setError("Network error. Try again.");
-            setLoading(false);
+    // 1. Append all text fields from your `data` object
+    Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+            formData.append(key, value);
         }
+    });
+
+    // 2. Append the fingerprint
+    formData.append("fingerprint", fingerprint);
+
+    // 3. Append the image file (give it a clear field name like "avatar" or "image")
+    // 4. Send FormData WITHOUT setting the Content-Type header manually
+    const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        body: formData,
+    });
+
+    const json = await res.json();
+
+    if (!json.success) {
+        toast.error("SignUp Failed");
+        setError(json.error || "Signup failed");
+        setLoading(false);
+        return;
+    }
+
+    toast.success("Account Created✅");
+    onNext();
+} catch (err) {
+    console.error("Signup error:", err);
+    setError("Network error. Try again.");
+    setLoading(false);
+}
+
     };
 
     const EyeIcon = ({ open }: { open: boolean }) =>
@@ -984,6 +1001,20 @@ function StepIdentityCredentials({
                         </div>
                     )}
                 </div>
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-medium">Avatar</label>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                            const selectedFile = e.target.files?.[0];
+                            if (selectedFile) {
+                                setData({ ...data, avatar: selectedFile });
+                            }
+                        }}
+                        className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold"
+                    />
+                </div>
             </div>
 
             {error && (
@@ -1091,9 +1122,14 @@ function StepComplete({ data }: { data: FormData }) {
             </div>
 
             <div className="w-full animate-fade-up-3">
-                <PrimaryButton onClick = {() => {
-                    window.location.reload();
-                }}gradient="world">Enter the Arena →</PrimaryButton>
+                <PrimaryButton
+                    onClick={() => {
+                        window.location.reload();
+                    }}
+                    gradient="world"
+                >
+                    Enter the Arena →
+                </PrimaryButton>
             </div>
         </div>
     );
@@ -1322,7 +1358,7 @@ function OnboardingShell({
 /* =========================================================
    LOGIN SCREEN
    ========================================================= */
-function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
+function LoginScreen({ onSwitch, user }: { onSwitch: () => void, user:any}) {
     const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
     const [showPwd, setShowPwd] = useState(false);
@@ -1346,16 +1382,16 @@ function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
             const data = await res.json();
 
             if (!data.success) {
-                toast.error(data.error)
+                toast.error(data.error);
                 setError(data.error || "Login failed");
                 setLoading(false);
                 return;
             }
-            toast.success('Logged In✅')
+            toast.success("Logged In✅");
             setLoading(false);
-            setTimeout(() =>{
-                window.location.reload();
-            },1000)
+
+            user?.refresh();
+
         } catch (err) {
             console.error("Login error:", err);
             setError("Network error. Try again.");
@@ -1509,15 +1545,15 @@ function LoginScreen({ onSwitch }: { onSwitch: () => void }) {
             </div>
         </div>
     );
-}   
+}
 
 /* =========================================================
    APP ROOT
    ========================================================= */
 export default function App() {
     const user = useUser();
-    const userData= user.user;
-    const router = useRouter()
+    const userData = user.user;
+    const router = useRouter();
     const [screen, setScreen] = useState<Screen>("onboarding");
     const [step, setStep] = useState<Step>(0);
     const [formData, setFormData] = useState<FormData>({
@@ -1529,6 +1565,7 @@ export default function App() {
         username: "",
         email: "",
         password: "",
+        avatar: null,
     });
     const update = (partial: Partial<FormData>) => setFormData((p) => ({ ...p, ...partial }));
     const next = () => setStep((s) => (s + 1) as Step);
@@ -1544,9 +1581,9 @@ export default function App() {
         setScreen("onboarding");
     }, []);
 
-    useEffect(()=>{
-        if(user.user){
-            router.replace('/realm')
+    useEffect(() => {
+        if (user.user) {
+            router.replace("/realm");
         }
     }, [userData]);
     return (
@@ -1574,6 +1611,7 @@ export default function App() {
                             setScreen("onboarding");
                             setStep(0);
                         }}
+                        user = {user}
                     />
                 ) : step === 0 ? (
                     <StepTeaser key="s0" onBegin={next} />
@@ -1586,7 +1624,7 @@ export default function App() {
                 ) : step === 4 ? (
                     <StepRankReveal key="s4" data={formData} onNext={next} />
                 ) : step === 5 ? (
-                    <StepIdentityCredentials key="s5" data={formData} setData={update} onNext={next} />
+                    <StepIdentityCredentials key="s5" data={formData} setData={update} onNext={next} user={user}/>
                 ) : (
                     <StepComplete key="s6" data={formData} />
                 )}
