@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { getRankName } from "@/lib/world/MPS";
 import { useUser } from "@/lib/auth/UserProvider";
 import toast from "react-hot-toast";
+
 /* =========================================================
    NAV ITEMS
    ========================================================= */

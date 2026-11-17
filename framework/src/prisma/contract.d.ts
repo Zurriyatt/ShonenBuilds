@@ -18,9 +18,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'44d1dbfe3a29d8d31825543fa0450aa94ccd1460039bed5e150c94a31eafbc60'>;
+  StorageHashBase<'4702355cbdc52de0d66548cbb2a52ded7efb8a7993452fac510a86eda51f4eb9'>;
 export type ExecutionHash =
-  ExecutionHashBase<'3761e5019eb90b20d48f119939b8ba9d010008a40e1df177454aab538c629649'>;
+  ExecutionHashBase<'29c9be2709df9908764eb8f5dd26a1becb042facdd9ccd5d390259d857bcaf4f'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -234,6 +234,15 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 
 export type FieldOutputTypes = {
   readonly public: {
+    readonly Connection: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly currentState: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly requestedBy: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly userAId: CodecTypes['pg/text@1']['output'];
+      readonly userBId: CodecTypes['pg/text@1']['output'];
+    };
     readonly PushSubscription: {
       readonly auth: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -256,6 +265,20 @@ export type FieldOutputTypes = {
       readonly os: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly userId: CodecTypes['pg/text@1']['output'];
+    };
+    readonly SquadMembers: {
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly joined_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly role: CodecTypes['pg/text@1']['output'];
+      readonly squad_id: CodecTypes['pg/text@1']['output'];
+      readonly user_id: CodecTypes['pg/text@1']['output'];
+    };
+    readonly Squads: {
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly created_by: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly tag: CodecTypes['pg/text@1']['output'];
     };
     readonly User: {
       readonly avatar: CodecTypes['pg/text@1']['output'];
@@ -326,6 +349,15 @@ export type FieldOutputTypes = {
 };
 export type FieldInputTypes = {
   readonly public: {
+    readonly Connection: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly currentState: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly requestedBy: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly userAId: CodecTypes['pg/text@1']['input'];
+      readonly userBId: CodecTypes['pg/text@1']['input'];
+    };
     readonly PushSubscription: {
       readonly auth: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -348,6 +380,20 @@ export type FieldInputTypes = {
       readonly os: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly userId: CodecTypes['pg/text@1']['input'];
+    };
+    readonly SquadMembers: {
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly joined_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly role: CodecTypes['pg/text@1']['input'];
+      readonly squad_id: CodecTypes['pg/text@1']['input'];
+      readonly user_id: CodecTypes['pg/text@1']['input'];
+    };
+    readonly Squads: {
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly created_by: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly tag: CodecTypes['pg/text@1']['input'];
     };
     readonly User: {
       readonly avatar: CodecTypes['pg/text@1']['input'];
@@ -418,6 +464,15 @@ export type FieldInputTypes = {
 };
 export type StorageColumnTypes = {
   readonly public: {
+    readonly connections: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly currentState: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly requestedBy: CodecTypes['pg/text@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly userAId: CodecTypes['pg/text@1']['output'];
+      readonly userBId: CodecTypes['pg/text@1']['output'];
+    };
     readonly push_subscriptions: {
       readonly auth: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -440,6 +495,20 @@ export type StorageColumnTypes = {
       readonly os: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly userId: CodecTypes['pg/text@1']['output'];
+    };
+    readonly SquadMembers: {
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly joined_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly role: CodecTypes['pg/text@1']['output'];
+      readonly squad_id: CodecTypes['pg/text@1']['output'];
+      readonly user_id: CodecTypes['pg/text@1']['output'];
+    };
+    readonly Squads: {
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly created_by: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly tag: CodecTypes['pg/text@1']['output'];
     };
     readonly user_settings: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -510,6 +579,15 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly public: {
+    readonly connections: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly currentState: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly requestedBy: CodecTypes['pg/text@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly userAId: CodecTypes['pg/text@1']['input'];
+      readonly userBId: CodecTypes['pg/text@1']['input'];
+    };
     readonly push_subscriptions: {
       readonly auth: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -532,6 +610,20 @@ export type StorageColumnInputTypes = {
       readonly os: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly userId: CodecTypes['pg/text@1']['input'];
+    };
+    readonly SquadMembers: {
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly joined_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly role: CodecTypes['pg/text@1']['input'];
+      readonly squad_id: CodecTypes['pg/text@1']['input'];
+      readonly user_id: CodecTypes['pg/text@1']['input'];
+    };
+    readonly Squads: {
+      readonly created_at: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly created_by: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly tag: CodecTypes['pg/text@1']['input'];
     };
     readonly user_settings: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -602,6 +694,18 @@ export type StorageColumnInputTypes = {
 };
 
 export namespace Models {
+  export type public_Connection = {
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    currentState: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    requestedBy: CodecTypes['pg/text@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    userAId: CodecTypes['pg/text@1']['output'];
+    userBId: CodecTypes['pg/text@1']['output'];
+    userA: public_User;
+    userB: public_User;
+    readonly [RelationKeys]?: 'userA' | 'userB';
+  };
   export type public_PushSubscription = {
     auth: CodecTypes['pg/text@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -629,6 +733,25 @@ export namespace Models {
     user: public_User;
     readonly [RelationKeys]?: 'user';
   };
+  export type public_SquadMembers = {
+    id: CodecTypes['pg/text@1']['output'];
+    joined_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    role: CodecTypes['pg/text@1']['output'];
+    squad_id: CodecTypes['pg/text@1']['output'];
+    user_id: CodecTypes['pg/text@1']['output'];
+    squad: public_Squads;
+    user: public_User;
+    readonly [RelationKeys]?: 'squad' | 'user';
+  };
+  export type public_Squads = {
+    created_at: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    created_by: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    name: CodecTypes['pg/text@1']['output'];
+    tag: CodecTypes['pg/text@1']['output'];
+    memebers: public_SquadMembers[];
+    readonly [RelationKeys]?: 'memebers';
+  };
   export type public_User = {
     avatar: CodecTypes['pg/text@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -642,15 +765,27 @@ export namespace Models {
     username: CodecTypes['pg/text@1']['output'];
     why: CodecTypes['pg/text@1']['output'];
     world: CodecTypes['pg/text@1']['output'];
+    connectionsAsUserA: public_Connection[];
+    connectionsAsUserB: public_Connection[];
     pushSubscriptions: public_PushSubscription[];
     sessions: public_Session[];
     settings: public_UserSettings | null;
     skills: public_UserSkill[];
+    squadMembership: public_SquadMembers | null;
     streak: public_UserStreak | null;
     weeklyProgress: public_WeeklyProgress | null;
     xp: public_UserXP | null;
     readonly [RelationKeys]?:
-      'pushSubscriptions' | 'sessions' | 'settings' | 'skills' | 'streak' | 'weeklyProgress' | 'xp';
+      | 'connectionsAsUserA'
+      | 'connectionsAsUserB'
+      | 'pushSubscriptions'
+      | 'sessions'
+      | 'settings'
+      | 'skills'
+      | 'squadMembership'
+      | 'streak'
+      | 'weeklyProgress'
+      | 'xp';
   };
   export type public_UserSettings = {
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -717,8 +852,11 @@ export namespace Models {
 
 export declare const models: {
   public: {
+    Connection: Models.public_Connection;
     PushSubscription: Models.public_PushSubscription;
     Session: Models.public_Session;
+    SquadMembers: Models.public_SquadMembers;
+    Squads: Models.public_Squads;
     User: Models.public_User;
     UserSettings: Models.public_UserSettings;
     UserSkill: Models.public_UserSkill;
@@ -746,6 +884,99 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly connections: {
+              columns: {
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly currentState: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'pending'>;
+                  };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly requestedBy: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly userAId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly userBId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['userAId', 'userBId'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'connections_userAId_idx_96e77d1b';
+                  readonly prefix: 'connections_userAId_idx';
+                  readonly columns: readonly ['userAId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'connections_userBId_idx_2ac770a6';
+                  readonly prefix: 'connections_userBId_idx';
+                  readonly columns: readonly ['userBId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'connections';
+                    readonly columns: readonly ['userAId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'connections';
+                    readonly columns: readonly ['userBId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly push_subscriptions: {
               columns: {
                 readonly auth: {
@@ -917,6 +1148,116 @@ type ContractBase = Omit<
                   };
                 },
               ];
+            };
+            readonly SquadMembers: {
+              columns: {
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly joined_at: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly role: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly squad_id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly user_id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['user_id'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'SquadMembers_squad_id_idx_7d508d81';
+                  readonly prefix: 'SquadMembers_squad_id_idx';
+                  readonly columns: readonly ['squad_id'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'SquadMembers';
+                    readonly columns: readonly ['squad_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Squads';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'SquadMembers';
+                    readonly columns: readonly ['user_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'users';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly Squads: {
+              columns: {
+                readonly created_at: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly created_by: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly name: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly tag: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['name'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [];
             };
             readonly user_settings: {
               columns: {
@@ -1454,6 +1795,15 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly SquadMembers: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'SquadMembers';
+    };
+    readonly Squads: { readonly namespace: 'public' & NamespaceId; readonly model: 'Squads' };
+    readonly connections: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'Connection';
+    };
     readonly push_subscriptions: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'PushSubscription';
@@ -1482,6 +1832,77 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly Connection: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly currentState: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly requestedBy: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly userAId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly userBId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly userA: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['userAId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly userB: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['userBId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'connections';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly currentState: { readonly column: 'currentState' };
+                readonly id: { readonly column: 'id' };
+                readonly requestedBy: { readonly column: 'requestedBy' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly userAId: { readonly column: 'userAId' };
+                readonly userBId: { readonly column: 'userBId' };
+              };
+            };
+          };
           readonly PushSubscription: {
             readonly fields: {
               readonly auth: {
@@ -1634,6 +2055,118 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly SquadMembers: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly joined_at: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly role: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly squad_id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly user_id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly squad: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Squads';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['squad_id'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly user: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['user_id'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'SquadMembers';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly joined_at: { readonly column: 'joined_at' };
+                readonly role: { readonly column: 'role' };
+                readonly squad_id: { readonly column: 'squad_id' };
+                readonly user_id: { readonly column: 'user_id' };
+              };
+            };
+          };
+          readonly Squads: {
+            readonly fields: {
+              readonly created_at: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly created_by: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly tag: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly memebers: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'SquadMembers';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['squad_id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'Squads';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly created_at: { readonly column: 'created_at' };
+                readonly created_by: { readonly column: 'created_by' };
+                readonly id: { readonly column: 'id' };
+                readonly name: { readonly column: 'name' };
+                readonly tag: { readonly column: 'tag' };
+              };
+            };
+          };
           readonly User: {
             readonly fields: {
               readonly avatar: {
@@ -1692,6 +2225,28 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly connectionsAsUserA: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Connection';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['userAId'];
+                };
+              };
+              readonly connectionsAsUserB: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Connection';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['userBId'];
+                };
+              };
               readonly pushSubscriptions: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -1735,6 +2290,18 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['id'];
                   readonly targetFields: readonly ['userId'];
+                };
+              };
+              readonly squadMembership: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'SquadMembers';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['user_id'];
                 };
               };
               readonly streak: {
@@ -2175,6 +2742,31 @@ type ContractBase = Omit<
     readonly executionHash: ExecutionHash;
     readonly mutations: {
       readonly defaults: readonly [
+        {
+          readonly onCreate: { readonly id: 'cuid2'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'Squads';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'cuid2'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'connections';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'connections';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
         {
           readonly onCreate: { readonly id: 'cuid2'; readonly kind: 'generator' };
           readonly ref: {

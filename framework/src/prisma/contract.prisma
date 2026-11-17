@@ -18,6 +18,10 @@ model User {
   settings  UserSettings?
   weeklyProgress WeeklyProgress?
   pushSubscriptions PushSubscription[]
+  squadMembership    SquadMembers?
+  connectionsAsUserA Connection[]       @relation("UserAConnections")
+  connectionsAsUserB Connection[]       @relation("UserBConnections")
+
   createdAt DateTime      @default(now())
   updatedAt temporal.updatedAt()
   
@@ -137,4 +141,43 @@ model PushSubscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId])
   @@map("push_subscriptions")
+}
+
+model Squads {
+    id   String @id @default(cuid(2))
+    name String @unique
+    tag  String
+    memebers SquadMembers[]
+
+    created_by String
+    created_at DateTime @default(now())
+}
+
+model SquadMembers {
+    id        String @id 
+    squad_id  String 
+    squad     Squads  @relation(fields: [squad_id], references: [id], onDelete: Cascade)
+    user_id   String  @unique
+    user      User    @relation(fields : [user_id], references : [id], onDelete: Cascade)
+    role      String
+    joined_at DateTime @default(now())
+
+}
+model Connection {
+  id           String   @id @default(cuid(2))
+  userAId      String
+  userBId      String
+  requestedBy  String   
+  currentState String   @default("pending")
+  userA        User     @relation("UserAConnections", fields: [userAId], references: [id], onDelete: Cascade)
+  userB        User     @relation("UserBConnections", fields: [userBId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+  updatedAt    temporal.updatedAt()
+
+  @@unique([userAId, userBId])
+  @@map("connections")
+  @@index([userBId]) 
+  @@index([userAId]) 
+
 }
